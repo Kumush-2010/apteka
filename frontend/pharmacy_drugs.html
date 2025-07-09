@@ -128,7 +128,8 @@
     <div class="content-body">
       <div class="container-fluid">
         <div class="col-lg-6">
-          <div id="pharmacyList" class="pharmacy-info" style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 6px;">
+          <div id="pharmacyList" class="pharmacy-info"
+            style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 6px;">
             <!-- <h3 id="name">Dorixona nomi</h3>
             <p>Manzil: <span id="pharmacyAddress"></span></p>
             <p>Telefon: <span id="pharmacyPhone"></span></p>
@@ -136,7 +137,7 @@
             <p>Mo'ljal: <span id="destination"></span></p>
             <p>Admin: <span id="adminSelect"></span></p>
             <p>Kuryer: <span id="supplierSelect"></span></p> -->
-        </div>
+          </div>
           <div class="card">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -158,18 +159,6 @@
                     </tr>
                   </thead>
                   <tbody id="medicineBody">
-                    <tr>
-                      <td>1</td>
-                      <td>Joxa</td>
-                      <td>Amir Temur ko'chasi</td>
-                      <td>+998904385114</td>
-                      <td>
-                        <a href="`pharmacy_drugs.html?pharmacyId"="${ph.id}`"><i class="fa fa-eye"></i></a>
-                        <a href="#" onclick="openEditModal(`${JSON.stringify(ph)}`)"><i
-                            class="fa fa-pen-to-square"></i></a>
-                        <a href="#" onclick="deletePharmacy(`${ph.id}`)"><i class="fa fa-trash-can"></i></a>
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -248,7 +237,8 @@
                 <input type="text" class="form-control" id="manufacturer" required />
               </div>
               <div class="form-group">
-                <select id="pharmacySelect" name="pharmacyId" required>
+                <label for="pharmacySelect">Dorixona</label>
+                <select id="pharmacySelect" name="pharmacyId" class="form-control" required>
                   <option value="">-- Dorixona tanlang --</option>
                 </select>
               </div>
@@ -270,78 +260,82 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="modal">
-      <form id="medicineForm">
+    <div id="editMedicineModal" class="modal">
+      <form id="editMedicineForm">
         <div class="modal-content">
-          <span class="close" onclick="closeEditModal()">&times;</span>
+          <button type="button" class="close" onclick="closeEditModal()">
+            <span>&times;</span>
+          </button>
+
           <h3>Dori Malumotlarini Tahrirlash</h3>
-
           <input type="hidden" id="medId" />
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Nom (uz):</label>
-              <input type="text" id="nameUz" required />
-            </div>
-            <div class="form-group">
-              <label>Nom (ru): </label>
-              <input type="text" id="nameRu" />
-              <div class="form-group"></div>
-              <label>Nom (en): </label>
-              <input type="text" id="nameEn" />
-              <div class="form-group"></div>
-              <label>Soni: </label>
-              <input type="number" id="quantity" required />
-              <div class="form-group">
-                <label>Narxi (disk): </label>
-                <input type="number" id="priceDisk" />
-              </div>
-              <div class="form-group">
-                <label>Narxi (quti): </label>
-                <input type="number" id="priceBox" />
-              </div>
-              <div class="form-group">
-                <label>O'lcham (disk): </label>
-                <input type="text" id="sizeDisk" />
-              </div>
-              <div class="form-group">
-                <label>O'lcham (quti): </label>
-                <input type="text" id="sizeBox" />
-              </div>
-              <div class="form-group">
-                <label>Ishlab chiqaruvchi:</label>
-                <input type="text" id="manufacturer" />
-              </div>
-              <div class="form-group">
-                <label>Dorixona:</label>
-                <select id="pharmacyId">
-                  <option value="">Tanlang...</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Rasm: </label>
-                <input type="file" id="image" accept="image/*" onchange="previewImage(event)" />
-
-                <br />
-                <img id="imagePreview" src="" style="max-width: 100px; display: none" />
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('editModal')">
-                  Bekor qilish
-                </button>
-                <button type="submit" class="btn btn-success">Saqlash</button>
-              </div>
-            </div>
+          <div class="form-group">
+            <label>Nom (uz):</label>
+            <input type="text" class="form-control" id="nameUz" required />
           </div>
-      </form>
-    </div>
+          <div class="form-group">
+            <label>Nom (ru): </label>
+            <input type="text" class="form-control" id="nameRu" />
+          </div>
+          <div class="form-group">
+            <label>Nom (en): </label>
+            <input type="text" class="form-control" id="nameEn" />
+          </div>
+          <div class="form-group">
+            <label>Soni: </label>
+            <input type="number" class="form-control" id="quantity" required />
+          </div>
+          <div class="form-group">
+            <label>Narxi (disk): </label>
+            <input type="number" class="form-control" id="priceDisk" />
+          </div>
+          <div class="form-group">
+            <label>Narxi (quti): </label>
+            <input type="number" class="form-control" id="priceBox" />
+          </div>
+          <div class="form-group">
+            <label>O'lcham (disk): </label>
+            <input type="text" class="form-control" id="sizeDisk" />
+          </div>
+          <div class="form-group">
+            <label>O'lcham (quti): </label>
+            <input type="text" class="form-control" id="sizeBox" />
+          </div>
+          <div class="form-group">
+            <label>Ishlab chiqaruvchi:</label>
+            <input type="text" class="form-control" id="manufacturer" />
+          </div>
+          <div class="form-group">
+            <label for="editPharmacySelect">Dorixona</label>
+            <select id="editPharmacySelect" name="pharmacyId" class="form-control" required>
+              <option value="">-- Dorixona tanlang --</option>
+            </select>
+          </div>
 
-    <div class="footer">
-      <div class="copyright">
-        <p>
-          Copyright &copy; Designed & Developed by <a href="">Quixlab</a> 2018
-        </p>
-      </div>
+          <div class="form-group">
+            <label>Rasm: </label>
+            <input type="file" id="image" accept="image/*" onchange="previewImage(event)" />
+
+            <br />
+            <img id="imagePreview" src="" style="max-width: 100px; display: none" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+              Bekor qilish
+            </button>
+            <button type="submit" class="btn btn-success">Saqlash</button>
+          </div>
+        </form>
+        </div>
+    </div>
+  </div>
+
+  </div>
+  <div class="footer">
+    <div class="copyright">
+      <p>
+        Copyright &copy; Designed & Developed by <a href="">Quixlab</a> 2018
+      </p>
     </div>
   </div>
   <script src="plugins/common/common.min.js"></script>

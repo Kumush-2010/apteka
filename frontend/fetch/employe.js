@@ -67,7 +67,7 @@ document.getElementById("createEmployeForm").addEventListener("submit", function
     const phone = document.getElementById("employePhone").value;
     const password = document.getElementById("employePassword").value;
     const role = document.getElementById("employeRole").value;
-    const token = getCookie("token");
+    const token = localStorage.getItem("token");
 
     fetch('http://localhost:7777/supplier/create', {
         method: 'POST',
@@ -161,7 +161,7 @@ function deleteEmploye(id) {
         cancelButtonText: 'Bekor qilish'
     }).then((result) => {
         if (result.isConfirmed) {
-            const token = getCookie("token");
+            const token = localStorage.getItem("token");
 
             fetch(`http://localhost:7777/supplier/${id}/delete`, {
                 method: 'DELETE',

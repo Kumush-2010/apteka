@@ -6,51 +6,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // 1. Load Pharmacies
-function loadPharmacies(pharmacyId) {
-  console.log("Kelayotgan pharmacyId:", pharmacyId);
-
-  const token = localStorage.getItem("token");
-
-  fetch("http://localhost:7777/pharmacies", {
-    method: "GET",
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+function loadPharmacies() {
+  const token = localStorage.getItem('token');
+  fetch('http://localhost:7777/pharmacies', {
+    headers: { 'Authorization': `Bearer ${token}` }
   })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Dorixonalar:", data);
-
-      const pharmacy = data.pharmacies.find(p => p.id === parseInt(pharmacyId));
-
-      if (!pharmacy) {
-        console.error("Dorixona topilmadi");
-        return;
-      }
-
-      const listDiv = document.getElementById("pharmacyList");
-      if (!listDiv) {
-        console.error("pharmacyList elementi topilmadi");
-        return;
-      }
-
-      listDiv.innerHTML = `
-        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-          <h3>${pharmacy.name}</h3>
-          <p><strong>Manzil:</strong> ${pharmacy.address}</p>
-          <p><strong>Mo'ljal:</strong> ${pharmacy.destination}</p>
-          <p><strong>Telefon:</strong> ${pharmacy.phone}</p>
-          <p><strong>Joylashuv:</strong> <a href="${pharmacy.locationUrl}" target="_blank">Ko'rish</a></p>
-          <p><strong>Admin ID:</strong> ${pharmacy.adminId ?? "Noma'lum"}</p>
-          <p><strong>Taminotchi ID:</strong> ${pharmacy.supplierId ?? "Noma'lum"}</p>
-        </div>
-      `;
-    })
-    .catch(err => {
-      console.error("Dorixonalarni olishda xatolik:", err);
-      alert("Dorixonalarni yuklashda xatolik yuz berdi.");
+  .then(res => res.json())
+  .then(data => {
+    const pharmacies = data.pharmacies || [];
+    ['pharmacySelect', 'editPharmacySelect'].forEach(id => {
+      const select = document.getElementById(id);
+      select.innerHTML = '<option value="">Dorixona tanlang</option>';
+      pharmacies.forEach(pharmacy => {
+        const option = document.createElement("option");
+        option.value = pharmacy.id;
+        option.textContent = pharmacy.name;
+        select.appendChild(option);
+      });
     });
+  })
+  .catch(err => console.error("Adminlar olishda xatolik:", err));
 }
+
 
 // 2. Load Medicines
 function loadMedicines() {
@@ -230,7 +207,7 @@ function openEditModal(el) {
     imagePreview.style.display = "none";
   }
 
-  document.getElementById("editModal").style.display = "block";
+  document.getElementById("editMedicineModal").style.display = "block";
 }
 
 function closeEditModal() {

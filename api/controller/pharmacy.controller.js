@@ -125,6 +125,24 @@ const getOnePharmacy = async (req, res) => {
         throw error
     }
 }
+const getPharmacy = async (req, res) => {
+    const pharmacyId = Number(req.params.id)
+    try {
+        const pharmacy = await prisma.pharmacy.findUnique({
+            where: { id: pharmacyId },
+            include: {
+                medicine: true
+            }
+        })
+        if (!pharmacy) {
+            return res.status(404).json({ message: 'Pharmacy not found' })
+        }
+        return res.status(200).json({ medicines: pharmacy.medicine })
+    } catch (error) {
+        console.error('Error fetching pharmacy medicines:', error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
+}
 
 const pharmacyUpdate = async (req, res) => {
     try {
@@ -247,4 +265,4 @@ const deletePharmacy = async (req, res) => {
     }
 }
 
-export { pharmacyCreate, getAllPharmacies, getOnePharmacy, pharmacyUpdate, deletePharmacy }
+export { pharmacyCreate, getAllPharmacies, getOnePharmacy, pharmacyUpdate, deletePharmacy, getPharmacy }

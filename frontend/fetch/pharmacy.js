@@ -179,16 +179,49 @@ function updatePharmacy(e) {
 
 // Dorixonani o‘chirish
 function deletePharmacy(id) {
-  if (confirm("Rostan ham o'chirmoqchimisiz?")) {
-    fetch(`http://localhost:7777/pharmacies/${id}/delete`, {
-      method: 'DELETE'
-    })
-    .then(res => res.json())
-    .then(() => fetchPharmacies())
-    .catch(err => console.error("Dorixona o‘chirishda xatolik:", err));
-  }
+  Swal.fire({
+    title: "Ishonchingiz komilmi?",
+    text: "Bu dorixona o‘chiriladi!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Ha, o‘chir!",
+    cancelButtonText: "Bekor qilish",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+     fetch(`http://localhost:7777/pharmacies/${id}/delete`, {
+      method: 'DELETE',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (res.ok) {
+            Swal.fire(
+              "O‘chirildi!",
+              "Dorixona muvaffaqiyatli o‘chirildi.",
+              "success"
+            ).then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire(
+              "Xatolik!",
+              "Dorixonani o‘chirishda muammo yuz berdi.",
+              "error"
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Xatolik:", error);
+          Swal.fire("Xatolik!", "Tarmoqda xatolik yuz berdi.", "error");
+        });
+    }
+  });
 }
-
 // Tahrirlash modalini ochish
 function openEditModal(pharmacy) {
   document.getElementById('editPharmacyId').value = pharmacy.id;

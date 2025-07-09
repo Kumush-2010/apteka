@@ -33,7 +33,7 @@ const createMedicine = async (req, res) => {
         }
 
         const image = await storage.upload(req.file)
-        const pharmacyId = Number(value)
+        const pharmacyId = Number(req.body.pharmacyId)
 
         await prisma.medicine.create({
             data: {
