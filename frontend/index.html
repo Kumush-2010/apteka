@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      Quixlab - Bootstrap Admin Dashboard Template by Themefisher.com
+    </title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon.png" />
+    <!-- Custom Stylesheet -->
+    <link href="css/style.css" rel="stylesheet" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div id="preloader">
+      <div class="loader">
+        <svg class="circular" viewBox="25 25 50 50">
+          <circle
+            class="path"
+            cx="50"
+            cy="50"
+            r="20"
+            fill="none"
+            stroke-width="3"
+            stroke-miterlimit="10"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <div id="main-wrapper">
+      <div class="nav-header">
+        <div class="brand-logo">
+          <a href="index.html">
+            <b class="logo-abbr"><img src="images/logo.png" alt="" /> </b>
+            <span class="logo-compact"
+              ><img src="images/logo-compact.png" alt=""
+            /></span>
+            <span class="brand-title">
+              <img src="images/logo-text.png" alt="" />
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="header">
+        <div class="header-content clearfix">
+          <div class="nav-control">
+            <div class="hamburger">
+              <span class="toggle-icon"><i class="icon-menu"></i></span>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <ul class="clearfix">
+              <li class="icons dropdown">
+                <div
+                  class="admin-img c-pointer position-relative"
+                  data-toggle="dropdown"
+                >
+                  <span class="activity active"></span>
+                  <img src="images/user/1.png" height="40" width="40" alt="" />
+                </div>
+                <div class="drop-down dropdown-profile dropdown-menu">
+                  <div class="dropdown-content-body">
+                    <ul>
+                      <li>
+                        <a href="page-login.html"
+                          ><i class="icon-key"></i> <span>Logout</span></a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="nk-sidebar">
+        <div class="nk-nav-scroll">
+          <ul class="metismenu" id="menu">
+            <ul aria-expanded="false">
+              <a href="admins.html">
+                <i class="fa-solid fa-users-gear" style="padding-right: 5px"></i
+                >Adminlar</a
+              >
+            </ul>
+            <ul aria-expanded="false">
+              <a href="employees.html">
+                <i class="fa-solid fa-users" style="padding-right: 5px"></i
+                >Xodimlar</a
+              >
+            </ul>
+            <ul aria-expanded="false">
+              <a href="drugs.html">
+                <i class="fa-solid fa-pills" style="padding-right: 5px"></i
+                >Dorilar</a
+              >
+            </ul>
+            <ul aria-expanded="false">
+              <a href="pharmacies.html">
+                <i class="fa-solid fa-hospital" style="padding-right: 5px"></i
+                >Dorixonalar</a
+              >
+            </ul>
+          </ul>
+        </div>
+      </div>
+      <div class="content-body">
+        <div class="container-fluid">
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-body">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h4 class="card-title">Adminlar</h4>
+                  <button
+                    type="button"
+                    class="btn btn-primary mb-3"
+                    data-toggle="modal"
+                    data-target="#createAdminModal"
+                  >
+                    Yangi Admin Qo'shish
+                  </button>
+                </div>
+                <div class="table-responsive">
+                  <table
+                    class="table table-bordered table-striped verticle-middle"
+                  >
+                    <thead>
+                      <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Ism</th>
+                        <th scope="col">Telefon</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col">Amallar</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminList">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create modal -->
+      <div
+        class="modal fade"
+        id="createAdminModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="createAdminModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <form id="createAdminForm" class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="createAdminModalLabel">
+                Yangi Admin Qo'shish
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Yopish"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Ism</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="adminName"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Telefon</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="adminPhone"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Rol</label>
+                <select class="form-control" id="adminRole">
+                  <option value="superAdmin">superadmin</option>
+                  <option value="admin">admin</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Parol</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="adminPassword"
+                  required
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Bekor qilish
+              </button>
+              <button type="submit" class="btn btn-success">Qo'shish</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Edit modal -->
+      <div id="editAdminModal" class="modal" style="display: none">
+        <div
+          class="modal-content"
+          style="
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          "
+        >
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Yopish"
+          >
+            <span
+              onclick="closeModal()"
+              style="float: right; cursor: pointer"
+              aria-hidden="true"
+              >&times;</span
+            >
+          </button>
+          <h4>Admin tahrirlash</h4>
+          <form id="editAdminForm">
+            <input type="hidden" id="editAdminId" />
+            <div class="form-group">
+              <label>Ism</label>
+              <input
+                type="text"
+                id="editAdminName"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Telefon</label>
+              <input
+                type="text"
+                id="editAdminPhone"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Rol</label>
+              <select id="editAdminRole" class="form-control" required>
+                <option value="superAdmin">superadmin</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Yangi parol (agar o'zgartirmoqchi bo'lsangiz)</label>
+              <input
+                type="password"
+                id="editAdminPassword"
+                class="form-control"
+                placeholder="Parolni kiriting yoki bo'sh qoldiring"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Saqlash</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="copyright">
+          <p>
+            Copyright &copy; Designed & Developed by <a href="">Quixlab</a> 2018
+          </p>
+        </div>
+      </div>
+    </div>
+    <script src="plugins/common/common.min.js"></script>
+    <script src="js/custom.min.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/gleek.js"></script>
+    <script src="js/styleSwitcher.js"></script>
+    <script src="fetch/admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </body>
+</html>

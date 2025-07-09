@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  superAdmin
+  supplier
+}
+
+model Admin {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  phone     String     @unique @db.VarChar(20)
+  password  String     @db.Text
+  role      Role
+  createdAt DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt DateTime   @updatedAt @db.Timestamp(0)
+  pharmacy  Pharmacy[]
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  phone     String     @unique @db.VarChar(20)
+  password  String     @db.Text
+  role      Role
+  createdAt DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt DateTime   @updatedAt @db.Timestamp(0)
+  pharmacy  Pharmacy[]
+}
+
+model Pharmacy {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.Text
+  address     String     @db.Text
+  locationUrl String
+  latitude    Float
+  longitude   Float
+  destination String     @db.Text
+  phone       String     @unique @db.VarChar(20)
+  adminId     Int
+  admin       Admin      @relation(fields: [adminId], references: [id])
+  supplierId  Int
+  supplier    Supplier   @relation(fields: [supplierId], references: [id])
+  medicine    Medicine[]
+}
+
+model Medicine {
+  id              Int      @id @default(autoincrement())
+  uz_name         String   @db.Text
+  ru_name         String   @db.Text
+  en_name         String   @db.Text
+  made            String   @db.Text
+  one_plate       String   @db.Text
+  one_box         String   @db.Text
+  one_plate_price Int      @db.Integer
+  one_box_price   Int      @db.Integer
+  warehouse       Int      @db.Integer
+  image_path      String  @db.Text
+  image           String   @db.Text
+  pharmacyId      Int
+  pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
+}

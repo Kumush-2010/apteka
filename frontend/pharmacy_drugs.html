@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quixlab - Bootstrap Dashboard Template by Themefisher.com</title>
+  <!-- Favicon icon -->
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon.png" />
+  <!-- Custom Stylesheet -->
+  <link href="css/style.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      position: relative;
+    }
+
+    .close {
+      color: #aaa;
+      position: absolute;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      top: 10px;
+      cursor: pointer;
+    }
+
+    .clode:hover {
+      color: black;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="preloader">
+    <div class="loader">
+      <svg class="circular" viewBox="25 25 50 50">
+        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="3" stroke-miterlimit="10" />
+      </svg>
+    </div>
+  </div>
+
+  <div id="main-wrapper">
+    <div class="nav-header">
+      <div class="brand-logo">
+        <a href="index.html">
+          <b class="logo-abbr"><img src="images/logo.png" alt="" /> </b>
+          <span class="logo-compact"><img src="images/logo-compact.png" alt="" /></span>
+          <span class="brand-title">
+            <img src="images/logo-text.png" alt="" />
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="header">
+      <div class="header-content clearfix">
+        <div class="nav-control">
+          <div class="hamburger">
+            <span class="toggle-icon"><i class="icon-menu"></i></span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <ul class="clearfix">
+            <li class="icons dropdown">
+              <div class="Pharmacy-img c-pointer position-relative" data-toggle="dropdown">
+                <span class="activity active"></span>
+                <img src="images/user/1.png" height="40" width="40" alt="" />
+              </div>
+              <div class="drop-down dropdown-profile dropdown-menu">
+                <div class="dropdown-content-body">
+                  <ul>
+                    <li>
+                      <a href="page-login.html"><i class="icon-key"></i> <span>Logout</span></a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="nk-sidebar">
+      <div class="nk-nav-scroll">
+        <ul class="metismenu" id="menu">
+          <ul aria-expanded="false">
+            <a href="admins.html">
+              <i class="fa-solid fa-users-gear" style="padding-right: 5px"></i>Adminlar</a>
+          </ul>
+          <ul aria-expanded="false">
+            <a href="employees.html">
+              <i class="fa-solid fa-users" style="padding-right: 5px"></i>Xodimlar</a>
+          </ul>
+          <ul aria-expanded="false">
+            <a href="drugs.html">
+              <i class="fa-solid fa-pills" style="padding-right: 5px"></i>Dorilar</a>
+          </ul>
+          <ul aria-expanded="false">
+            <a href="pharmacies.html">
+              <i class="fa-solid fa-hospital" style="padding-right: 5px"></i>Dorixonalar</a>
+          </ul>
+        </ul>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="container-fluid">
+        <div class="col-lg-6">
+          <div id="pharmacyList" class="pharmacy-info" style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 6px;">
+            <!-- <h3 id="name">Dorixona nomi</h3>
+            <p>Manzil: <span id="pharmacyAddress"></span></p>
+            <p>Telefon: <span id="pharmacyPhone"></span></p>
+            <p>Joylashuv havolasi: <span id="locationUrl"></span></p>
+            <p>Mo'ljal: <span id="destination"></span></p>
+            <p>Admin: <span id="adminSelect"></span></p>
+            <p>Kuryer: <span id="supplierSelect"></span></p> -->
+        </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="card-title">Dorilar</h4>
+                <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#createMedicineModal">
+                  <i class="fa fa-plus"></i> Dori qo‘shish
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped verticle-middle">
+                  <thead>
+                    <tr>
+                      <th scope="col">Rasm</th>
+                      <th scope="col">Nomi</th>
+                      <th scope="col">Narxi(disk)</th>
+                      <th scope="col">Soni</th>
+                      <th scope="col">Ishlab chiqaruvchi</th>
+                      <th scope="col">Amallar</th>
+                    </tr>
+                  </thead>
+                  <tbody id="medicineBody">
+                    <tr>
+                      <td>1</td>
+                      <td>Joxa</td>
+                      <td>Amir Temur ko'chasi</td>
+                      <td>+998904385114</td>
+                      <td>
+                        <a href="`pharmacy_drugs.html?pharmacyId"="${ph.id}`"><i class="fa fa-eye"></i></a>
+                        <a href="#" onclick="openEditModal(`${JSON.stringify(ph)}`)"><i
+                            class="fa fa-pen-to-square"></i></a>
+                        <a href="#" onclick="deletePharmacy(`${ph.id}`)"><i class="fa fa-trash-can"></i></a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dori malumotlari -->
+    <div id="viewMedicineModal" class="modal">
+      <div class="modal-content">
+        <span onclick="closeViewModal()" class="close">&times;</span>
+        <h3>Dori Malumotlari</h3>
+        <img id="viewImage" src="" width="100" style="margin-bottom: 10px" />
+        <p>Nomi (UZ): <span id="viewNameUz"></span></p>
+        <p>Nomi (RU): <span id="viewNameRu"></span></p>
+        <p>Nomi (EN): <span id="viewNameEn"></span></p>
+        <p>Soni (Omborda): <span id="viewWarehouse"></span></p>
+        <p>Narxi (disk): <span id="viewPriceDisk"></span></p>
+        <p>Narxi (quti): <span id="viewPriceBox"></span></p>
+        <p>O‘lcham (disk): <span id="viewSizeDisk"></span></p>
+        <p>O‘lcham (quti): <span id="viewSizeBox"></span></p>
+        <p>Ishlab chiqaruvchi: <span id="viewManufacturer"></span></p>
+      </div>
+    </div>
+
+    <!-- Create Modal -->
+    <div class="modal fade" id="createMedicineModal" tabindex="-1" role="dialog" aria-labelledby="createMedicineLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <form id="createMedicineForm" enctype="multipart/form-data">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Yangi dori qo‘shish</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="nameUz">Nomi (UZ)</label>
+                <input type="text" class="form-control" id="nameUz" required />
+              </div>
+              <div class="form-group">
+                <label for="nameRu">Nomi (RU)</label>
+                <input type="text" class="form-control" id="nameRu" required />
+              </div>
+              <div class="form-group">
+                <label for="nameEn">Nomi (EN)</label>
+                <input type="text" class="form-control" id="nameEn" required />
+              </div>
+              <div class="form-group">
+                <label for="quantity">Soni</label>
+                <input type="number" class="form-control" id="quantity" required />
+              </div>
+              <div class="form-group">
+                <label for="priceDisk">Narxi (disk)</label>
+                <input type="number" class="form-control" id="priceDisk" required />
+              </div>
+              <div class="form-group">
+                <label for="priceBox">Narxi (quti)</label>
+                <input type="number" class="form-control" id="priceBox" required />
+              </div>
+              <div class="form-group">
+                <label for="sizeDisk">O‘lcham (disk)</label>
+                <input type="text" class="form-control" id="sizeDisk" required />
+              </div>
+              <div class="form-group">
+                <label for="sizeBox">O‘lcham (quti)</label>
+                <input type="text" class="form-control" id="sizeBox" required />
+              </div>
+              <div class="form-group">
+                <label for="manufacturer">Ishlab chiqaruvchi</label>
+                <input type="text" class="form-control" id="manufacturer" required />
+              </div>
+              <div class="form-group">
+                <select id="pharmacySelect" name="pharmacyId" required>
+                  <option value="">-- Dorixona tanlang --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="imageFile">Rasm yuklash</label>
+                <input type="file" class="form-control-file" id="imageFile" accept="image/*" required />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                Bekor qilish
+              </button>
+              <button type="submit" class="btn btn-success">Qo‘shish</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+      <form id="medicineForm">
+        <div class="modal-content">
+          <span class="close" onclick="closeEditModal()">&times;</span>
+          <h3>Dori Malumotlarini Tahrirlash</h3>
+
+          <input type="hidden" id="medId" />
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Nom (uz):</label>
+              <input type="text" id="nameUz" required />
+            </div>
+            <div class="form-group">
+              <label>Nom (ru): </label>
+              <input type="text" id="nameRu" />
+              <div class="form-group"></div>
+              <label>Nom (en): </label>
+              <input type="text" id="nameEn" />
+              <div class="form-group"></div>
+              <label>Soni: </label>
+              <input type="number" id="quantity" required />
+              <div class="form-group">
+                <label>Narxi (disk): </label>
+                <input type="number" id="priceDisk" />
+              </div>
+              <div class="form-group">
+                <label>Narxi (quti): </label>
+                <input type="number" id="priceBox" />
+              </div>
+              <div class="form-group">
+                <label>O'lcham (disk): </label>
+                <input type="text" id="sizeDisk" />
+              </div>
+              <div class="form-group">
+                <label>O'lcham (quti): </label>
+                <input type="text" id="sizeBox" />
+              </div>
+              <div class="form-group">
+                <label>Ishlab chiqaruvchi:</label>
+                <input type="text" id="manufacturer" />
+              </div>
+              <div class="form-group">
+                <label>Dorixona:</label>
+                <select id="pharmacyId">
+                  <option value="">Tanlang...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Rasm: </label>
+                <input type="file" id="image" accept="image/*" onchange="previewImage(event)" />
+
+                <br />
+                <img id="imagePreview" src="" style="max-width: 100px; display: none" />
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('editModal')">
+                  Bekor qilish
+                </button>
+                <button type="submit" class="btn btn-success">Saqlash</button>
+              </div>
+            </div>
+          </div>
+      </form>
+    </div>
+
+    <div class="footer">
+      <div class="copyright">
+        <p>
+          Copyright &copy; Designed & Developed by <a href="">Quixlab</a> 2018
+        </p>
+      </div>
+    </div>
+  </div>
+  <script src="plugins/common/common.min.js"></script>
+  <script src="js/custom.min.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/gleek.js"></script>
+  <script src="js/styleSwitcher.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="fetch/pharmacy_drugs.js"></script>
+</body>
+
+</html>
