@@ -130,13 +130,13 @@
         <div class="col-lg-6">
           <div id="pharmacyList" class="pharmacy-info"
             style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 6px;">
-            <!-- <h3 id="name">Dorixona nomi</h3>
-            <p>Manzil: <span id="pharmacyAddress"></span></p>
-            <p>Telefon: <span id="pharmacyPhone"></span></p>
-            <p>Joylashuv havolasi: <span id="locationUrl"></span></p>
-            <p>Mo'ljal: <span id="destination"></span></p>
-            <p>Admin: <span id="adminSelect"></span></p>
-            <p>Kuryer: <span id="supplierSelect"></span></p> -->
+            <h2 id="pharmacyName">Dorixona nomi</h2>
+            <p><strong>Manzil: </strong><span id="pharmacyAddress"></span></p>
+            <p><strong>Telefon: </strong><span id="pharmacyPhone"></span></p>
+            <p><strong>Joylashuv havolasi: </strong><a id="pharmacyLocationUrl" href="#" target="_blank">Manzilga o'tish</a></p>
+            <p><strong>Mo'ljal: </strong><span id="destination"></span></p>
+            <p><strong>Admin: </strong><span id="adminSelect"></span></p>
+            <p><strong>Kuryer: </strong><span id="supplierSelect"></span></p>
           </div>
           <div class="card">
             <div class="card-body">
@@ -283,7 +283,7 @@
           </div>
           <div class="form-group">
             <label>Soni: </label>
-            <input type="number" class="form-control" id="quantity" required />
+            <input type="number" class="form-control" id="warehouse" required />
           </div>
           <div class="form-group">
             <label>Narxi (disk): </label>
@@ -307,7 +307,7 @@
           </div>
           <div class="form-group">
             <label for="editPharmacySelect">Dorixona</label>
-            <select id="editPharmacySelect" name="pharmacyId" class="form-control" required>
+           <select id="editPharmacySelect" name="pharmacyId" class="form-control" required>
               <option value="">-- Dorixona tanlang --</option>
             </select>
           </div>
@@ -326,7 +326,7 @@
             <button type="submit" class="btn btn-success">Saqlash</button>
           </div>
         </form>
-        </div>
+    </div>
     </div>
   </div>
 

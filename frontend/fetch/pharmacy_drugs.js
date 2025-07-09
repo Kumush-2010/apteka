@@ -191,13 +191,14 @@ function openEditModal(el) {
   document.getElementById("nameUz").value = el.dataset.nameuz;
   document.getElementById("nameRu").value = el.dataset.nameru;
   document.getElementById("nameEn").value = el.dataset.nameen;
-  document.getElementById("quantity").value = el.dataset.quantity;
+  document.getElementById("warehouse").value = el.dataset.warehouse;
   document.getElementById("priceDisk").value = el.dataset.pricedisk;
   document.getElementById("priceBox").value = el.dataset.pricebox;
   document.getElementById("sizeDisk").value = el.dataset.sizedisk;
   document.getElementById("sizeBox").value = el.dataset.sizebox;
   document.getElementById("manufacturer").value = el.dataset.manufacturer;
-  
+  document.getElementById("editPharmacySelect").value = el.dataset.pharmacyid;
+
   const imagePreview = document.getElementById("imagePreview");
   if (el.dataset.image) {
     imagePreview.src = el.dataset.image;
@@ -231,21 +232,16 @@ function bindEditForm() {
     const token = localStorage.getItem("token");
 
     const updated = {
-      name: {
-        uz: document.getElementById("nameUz").value,
-        ru: document.getElementById("nameRu").value,
-        en: document.getElementById("nameEn").value,
-      },
-      quantity: +document.getElementById("quantity").value,
-      price: {
-        disk: +document.getElementById("priceDisk").value,
-        box: +document.getElementById("priceBox").value,
-      },
-      size: {
-        disk: document.getElementById("sizeDisk").value,
-        box: document.getElementById("sizeBox").value,
-      },
-      manufacturer: document.getElementById("manufacturer").value,
+      uz_name: document.getElementById("nameUz").value,
+      ru_name: document.getElementById("nameRu").value,
+      en_name: document.getElementById("nameEn").value,
+      one_plate: document.getElementById("sizeDisk").value,
+      one_box: document.getElementById("sizeBox").value,
+      one_plate_price: +document.getElementById("priceDisk").value,
+      one_box_price: +document.getElementById("priceBox").value,
+      made: document.getElementById("manufacturer").value,
+      warehouse: document.getElementById("warehouse").value,
+      pharmacyId: +document.getElementById("editPharmacySelect").value,
     };
 
     fetch(`http://localhost:7777/medicine/${id}/update`, {
@@ -271,6 +267,7 @@ function bindEditForm() {
       });
   });
 }
+
 
 // 6. Delete Medicine
 function deleteMedicine(id) {
@@ -339,3 +336,90 @@ window.onclick = function (e) {
   const modalEdit = document.getElementById("editMedicineModal");
   if (e.target === modalEdit) closeEditModal();
 }
+
+// 
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const pharmacyId = urlParams.get("pharmacyId");
+
+  if (!pharmacyId) {
+    alert("Dorixona ID topilmadi. Iltimos, dorixonani tanlang.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  // 1. Dorixona ma'lumotlarini olish
+  fetch(`http://localhost:7777/pharmacy/${pharmacyId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${token}`,
+    }
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Dorixona ma'lumotlarini olishda xatolik.");
+      }
+      return res.json();
+    })
+    .then(data => {
+      const pharmacy = data.pharmacy;
+
+      // Dorixona ma'lumotlarini chiqarish
+      document.getElementById("pharmacyName").textContent = pharmacy.name;
+      document.getElementById("pharmacyAddress").textContent = pharmacy.address;
+      document.getElementById("pharmacyPhone").textContent = pharmacy.phone;
+
+      const locationLink = document.getElementById("pharmacyLocationUrl");
+      if (locationLink) {
+        locationLink.href = pharmacy.locationUrl || "#";
+        locationLink.textContent = pharmacy.locationUrl ? "Manzilga o'tish" : "Manzil yo'q";
+      }
+
+      const destinationEl = document.getElementById("destination");
+      if (destinationEl) {
+        destinationEl.textContent = pharmacy.destination || "—";
+      }
+
+// Adminni olish
+fetch(`http://localhost:7777/admin/${pharmacy.adminId}`, {
+  headers: { 'Authorization': `Bearer ${token}` }
+})
+.then(res => res.json())
+.then(res => {
+  const admin = res.admin;
+  const select = document.getElementById("adminSelect");
+  select.innerHTML = "";
+  const option = document.createElement("option");
+  option.value = admin.id;
+  option.textContent = admin.name;
+  option.selected = true;
+  select.appendChild(option);
+});
+
+// Supplierni olish
+fetch(`http://localhost:7777/supplier/${pharmacy.supplierId}`, {
+  headers: { 'Authorization': `Bearer ${token}` }
+})
+.then(res => res.json())
+.then(res => {
+  const supplier = res.supplier;
+  const select = document.getElementById("supplierSelect");
+  select.innerHTML = "";
+  const option = document.createElement("option");
+  option.value = supplier.id;
+  option.textContent = supplier.name;
+  option.selected = true;
+  select.appendChild(option);
+});
+
+
+    })
+    .catch(err => {
+      console.error("Dorixona ma'lumotlarini olishda xatolik:", err);
+      alert("Dorixona ma'lumotlarini olishda xatolik yuz berdi.");
+    });
+});
+
+
