@@ -4,7 +4,7 @@ import { PORT } from './config/config.js'
 const app = express()
 import cors from 'cors'
 import { appRouter } from './router/router.js'
-import './bot/bot.js'
+// import './bot/bot.js'
 
 
 app.use(cors({

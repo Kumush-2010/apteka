@@ -6,7 +6,7 @@ const router = Router()
 
 
 router
-    .post('/supplier/create', roleAccessMiddleware('admin','superAdmin'), createSupplier)
+    .post('/supplier/create', roleAccessMiddleware(['admin','superAdmin']), createSupplier)
     .get('/suppliers', roleAccessMiddleware(['superAdmin', 'admin']), getAllSuppliers)
     .get('/supplier/:id', roleAccessMiddleware(['superAdmin', 'admin']), getOneSupplier)
     .post('/supplier/:id/update', roleAccessMiddleware(['superAdmin', 'admin']), updateSupplier)

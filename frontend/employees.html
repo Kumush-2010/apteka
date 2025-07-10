@@ -103,9 +103,9 @@
               >
             </ul>
             <ul aria-expanded="false">
-              <a href="drugs.html">
+              <a href="orders.html">
                 <i class="fa-solid fa-pills" style="padding-right: 5px"></i
-                >Dorilar</a
+                >Buyurtmalar</a
               >
             </ul>
             <ul aria-expanded="false">
@@ -148,8 +148,7 @@
                         <th scope="col">Amallar</th>
                       </tr>
                     </thead>
-                    <tbody id="employeList">
-                    </tbody>
+                    <tbody id="employeList"></tbody>
                   </table>
                 </div>
               </div>
@@ -231,65 +230,64 @@
         </div>
       </div>
 
-    <!-- Edit modal -->
-<div id="editEmployeModal" class="modal" style="display: none">
-  <div
-    class="modal-content"
-    style="
-      max-width: 500px;
-      margin: auto;
-      margin-top: 50px;
-      padding: 20px;
-      border-radius: 8px;
-      background-color: #fff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    "
-  >
-    <button
-      type="button"
-      class="close"
-      data-dismiss="modal"
-      aria-label="Yopish"
-    >
-      <span
-        onclick="closeModal()"
-        style="float: right; cursor: pointer"
-        aria-hidden="true"
-        >&times;</span
-      >
-    </button>
-    <h4>Xodim tahrirlash</h4>
-    <form id="editEmployeForm">
-      <input type="hidden" id="editEmployeId" />
-      <div class="form-group">
-        <label>Ism</label>
-        <input
-          type="text"
-          id="editEmployeName"
-          class="form-control"
-          required
-        />
+      <!-- Edit modal -->
+      <div id="editEmployeModal" class="modal" style="display: none">
+        <div
+          class="modal-content"
+          style="
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          "
+        >
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Yopish"
+          >
+            <span
+              onclick="closeModal()"
+              style="float: right; cursor: pointer"
+              aria-hidden="true"
+              >&times;</span
+            >
+          </button>
+          <h4>Xodim tahrirlash</h4>
+          <form id="editEmployeForm">
+            <input type="hidden" id="editEmployeId" />
+            <div class="form-group">
+              <label>Ism</label>
+              <input
+                type="text"
+                id="editEmployeName"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Telefon</label>
+              <input
+                type="text"
+                id="editEmployePhone"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Rol</label>
+              <select id="editEmployeRole" class="form-control" required>
+                <option value="supplier">kuryer</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Saqlash</button>
+          </form>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Telefon</label>
-        <input
-          type="text"
-          id="editEmployePhone"
-          class="form-control"
-          required
-        />
-      </div>
-      <div class="form-group">
-        <label>Rol</label>
-        <select id="editEmployeRole" class="form-control" required>
-          <option value="supplier">kuryer</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Saqlash</button>
-    </form>
-  </div>
-</div>
-
 
       <div class="footer">
         <div class="copyright">

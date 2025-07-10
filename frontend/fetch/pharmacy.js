@@ -96,7 +96,10 @@ function fetchPharmacies() {
         `;
       });
     })
-    .catch(err => console.error('Dorixonalar olishda xatolik:', err));
+    .catch(err => {
+      console.error('Dorixonalar olishda xatolik:', err)
+      Swal.fire("Xatolik!", "Dorixonalar ro'yxatini olishda xatolik yuz berdi.", "error");
+    })
 }
 
 // Dorixona qo‘shish
@@ -131,14 +134,30 @@ document.getElementById("createPharmacyForm").addEventListener("submit", functio
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert("Dorixona muvaffaqiyatli qo‘shildi!");
+     Swal.fire({
+        icon: 'success',
+        title: 'Muvaffaqiyatli!',
+        text: 'Dorixona muvaffaqiyatli qo‘shildi!',
+     }).then(() => {
       $('#createPharmacyModal').modal('hide');
       fetchPharmacies();
+     })
     } else {
-      alert("Xatolik: " + (data.error || "Ma'lumot noto‘g‘ri!"));
+      Swal.fire({
+        icon: 'error',
+        title: 'Xatolik!',
+        text: data.error || 'Dorixona qo‘shishda xatolik yuz berdi!'
+      });
     }
   })
-  .catch(err => console.error('Dorixona qo‘shishda xatolik:', err));
+  .catch(err => {
+    console.error("Dorixona qo‘shishda xatolik:", err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Xatolik!',
+      text: 'Tarmoqda xatolik yuz berdi!'
+    });
+  });
 });
 
 // Dorixonani yangilash
@@ -167,14 +186,30 @@ function updatePharmacy(e) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert("Dorixona muvaffaqiyatli yangilandi!");
+      Swal.fire({
+        icon: 'success',
+        title: 'Yangilandi!',
+        text: 'Dorixona muvaffaqiyatli yangilandi!'
+      }).then(() => {
       $('#editPharmacyModal').modal('hide');
       fetchPharmacies();
+      })
     } else {
-      alert("Xatolik: " + (data.error || "Yangilashda xatolik yuz berdi!"));
+      Swal.fire({
+        icon: 'error',
+        title: 'Xatolik!',
+        text: data.error || 'Dorixona yangilashda xatolik yuz berdi!'
+      });
     }
   })
-  .catch(err => console.error("Dorixona yangilashda xatolik:", err));
+  .catch(err => {
+    console.error("Dorixona yangilashda xatolik:", err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Xatolik!',
+      text: 'Tarmoqda xatolik yuz berdi!'
+    });
+  });
 }
 
 // Dorixonani o‘chirish
@@ -191,7 +226,7 @@ function deletePharmacy(id) {
   }).then((result) => {
     if (result.isConfirmed) {
       const token = localStorage.getItem("token");
-     fetch(`http://localhost:7777/pharmacies/${id}/delete`, {
+     fetch(`http://localhost:7777/pharmacy/${id}/delete`, {
       method: 'DELETE',
         headers: {
           "Content-Type": "application/json",

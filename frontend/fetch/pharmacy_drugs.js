@@ -25,7 +25,10 @@ function loadPharmacies() {
       });
     });
   })
-  .catch(err => console.error("Adminlar olishda xatolik:", err));
+  .catch(err => {
+    console.error("Adminlar olishda xatolik:", err)
+    Swal.fire("Xatolik!", "Dorixonalar ro'yxatini olishda xatolik yuz berdi.", "error");
+});
 }
 
 
@@ -58,7 +61,11 @@ function loadMedicines() {
       const medicines = data.medicines;
 
       if(!Array.isArray(medicines)){
-        alert("Dorilarni yuklashda xatolik");
+        Swal.fire({
+          icon: "error",
+          title: "Xatolik!",
+          text: "Dorilarni yuklashda xatolik yuz berdi.",
+        });
         return;
       }
       medicines.forEach((med, index) => {
@@ -108,7 +115,11 @@ function loadMedicines() {
     })
     .catch(err => {
       console.error("Dori yuklashda xatolik:", err);
-      alert("Dorilarni yuklashda xatolik yuz berdi.");
+      Swal.fire({
+        icon: "error",
+        title: "Xatolik!",
+        text: "Dorilarni yuklashda xatolik yuz berdi.",
+      })
     });
 }
 
@@ -128,13 +139,21 @@ function bindCreateForm() {
 
     const imageInput = document.getElementById("imageFile");
     if (!imageInput || !imageInput.files.length) {
-      alert("Iltimos, rasm faylini tanlang.");
+     Swal.fire({
+        icon: "error",
+        title: "Xatolik!", 
+        text: "Iltimos, dori rasmni tanlang.",
+     })
       return;
     }
 
     const pharmacyId = parseInt(document.getElementById("pharmacySelect").value);
     if (isNaN(pharmacyId)) {
-      alert("Iltimos, dorixonani to'g'ri tanlang.");
+      Swal.fire({
+        icon: "error",
+        title: "Xatolik!",
+        text: "Iltimos, dorixonani to'g'ri tanlang.",
+      });
       return;
     }
 
@@ -170,11 +189,25 @@ function bindCreateForm() {
         }
         return res.json();
       })
-      .then(() => {
-        alert("Dori muvaffaqiyatli qo‘shildi!");
-        $("#createMedicineModal").modal("hide");
-        form.reset(); // formani tozalash
-        location.reload(); // sahifani yangilash
+      .then((data) => {
+        if (data.success) {
+     Swal.fire({
+        icon: 'success',
+        title: 'Muvaffaqiyatli!',
+        text: 'Dori muvaffaqiyatli qo‘shildi!',
+     }).then(() => {
+      $('#createMedicineModa').modal('hide');
+      fetchPharmacies();
+     })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Xatolik!',
+        text: data.error || 'Dori qo‘shishda xatolik yuz berdi!'
+      });
+    }
+        form.reset();
+        location.reload();
       })
       .catch(err => {
         console.error("Xatolik:", err);
@@ -256,10 +289,22 @@ function bindEditForm() {
         if (!res.ok) throw new Error("Yangilashda xatolik.");
         return res.json();
       })
-      .then(() => {
-        alert("Dori muvaffaqiyatli yangilandi!");
-        closeEditModal();
-        location.reload();
+      .then((data) => {
+         closeEditModal();
+        if (data.success) {
+          Swal.fire({
+            icon: "success",  
+            title: "Yangilandi!",
+            text: "Dori muvaffaqiyatli yangilandi!",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Xatolik!",
+            text: "Dori yangilashda xatolik yuz berdi!",
+          });
+        }
+        // location.reload();
       })
       .catch(err => {
         console.error("Xatolik:", err);
@@ -343,7 +388,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const pharmacyId = urlParams.get("pharmacyId");
 
   if (!pharmacyId) {
-    alert("Dorixona ID topilmadi. Iltimos, dorixonani tanlang.");
+    Swal.fire({
+      icon: "error",  
+      title: "Xatolik!",
+      text: "Dorixona ID topilmadi. Iltimos, dorixonani tanlang.",
+    })
     return;
   }
 
@@ -418,7 +467,11 @@ fetch(`http://localhost:7777/supplier/${pharmacy.supplierId}`, {
     })
     .catch(err => {
       console.error("Dorixona ma'lumotlarini olishda xatolik:", err);
-      alert("Dorixona ma'lumotlarini olishda xatolik yuz berdi.");
+      Swal.fire({
+        icon: "error",
+        title: "Xatolik!",
+        text: "Dorixona ma'lumotlarini olishda xatolik yuz berdi.",
+      });
     });
 });
 

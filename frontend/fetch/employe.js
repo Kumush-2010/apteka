@@ -1,103 +1,93 @@
-// employes
-document.addEventListener('DOMContentLoaded', () => {
-    const tableBody = document.querySelector("table tbody");
-    const token = localStorage.getItem('token');
 
-    fetch('http://localhost:7777/suppliers', {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        } 
+// Employe ro'yxatini olish
+document.addEventListener("DOMContentLoaded", () => {
+  const tableBody = document.querySelector("table tbody");
+  const token = localStorage.getItem("token");
+
+  fetch("http://localhost:7777/suppliers", {
+    method: "GET",
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      tableBody.innerHTML = "";
+      data.suppliers.forEach((employe, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${employe.name}</td>
+          <td>${employe.phone}</td>
+          <td><span class="label gradient-1 btn-rounded">${employe.role}</span></td>
+          <td>
+            <span>
+              <a href="#" class="edit-btn" data-id="${employe.id}" title="Edit">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+              <a href="#" class="delete-btn" data-id="${employe.id}" title="Delete">
+                <i class="fa-solid fa-trash-can"></i>
+              </a>
+            </span>
+          </td>`;
+        tableBody.appendChild(tr);
+
+        // Edit tugmasi
+        tr.querySelector(".edit-btn").addEventListener("click", (e) => {
+          e.preventDefault();
+          openModal(employe);
+        });
+
+        // Delete tugmasi
+        tr.querySelector(".delete-btn").addEventListener("click", (e) => {
+          e.preventDefault();
+          deleteEmploye(employe.id);
+        });
+      });
     })
-    .then(res => res.json())
-    .then(data => {
-        tableBody.innerHTML = '';
-     // tableBody ichiga rows qo‘shilganda, Edit tugmasini ulang:
-data.suppliers.forEach((employe, index) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${index + 1}</td>
-    <td>${employe.name}</td>
-    <td>${employe.phone}</td>
-    <td><span class="label gradient-1 btn-rounded">${employe.role}</span></td>
-    <td>
-      <span>
-        <a href="#" class="edit-btn" data-id="${employe.id}" title="Edit">
-          <i class="fa-solid fa-pen-to-square"></i>
-        </a>
-        <a href="#" class="delete-btn" data-id="${employe.id}" title="Delete">
-          <i class="fa-solid fa-trash-can"></i>
-        </a>
-      </span>
-    </td>
-  `;
-  tableBody.appendChild(tr);
+    .catch((error) => {
+      console.error("Xatolik:", error);
+      Swal.fire("Xatolik!", "Xodimlar ro'yxatini olishda xatolik yuz berdi.", "error");
+    });
+});
 
-  // Edit tugmasi bosilganda openModal chaqiriladi
-  tr.querySelector('.edit-btn').addEventListener('click', (e) => {
-    e.preventDefault();
-    openModal(employe);
-  });
+// Create employe
+document.getElementById("createEmployeForm")?.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-  // Delete tugmasi uchun kerak bo‘lsa: 
-  tr.querySelector('.delete-btn').addEventListener('click', (e) => {
-    e.preventDefault();
-    deleteEmploye(employe.id);
+  const name = document.getElementById("employeName").value;
+  const phone = document.getElementById("employePhone").value;
+  const password = document.getElementById("employePassword").value;
+  const role = document.getElementById("employeRole").value;
+  const token = localStorage.getItem("token");
+console.log("TOKEN:", localStorage.getItem("token"));
+
+  fetch("http://localhost:7777/supplier/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+  },
+  body: JSON.stringify({ name, phone, role, password }),
+})
+  .then(async (res) => {
+    const text = await res.text();
+    console.log("STATUS:", res.status, "BODY:", text);
+    if (!res.ok) throw new Error(text || "Xodim yaratish muvaffaqiyatsiz bo'ldi");
+    return res.json();
+  })
+  .then(() => {
+    Swal.fire("Muvaffaqiyatli!", "Xodim muvaffaqiyatli yaratildi!", "success");
+    $("#creteEmployeModal").modal("hide");
+    setTimeout(() => location.reload(), 1000);
+  })
+  .catch((error) => {
+    console.error("Xatolik:", error);
+    Swal.fire("Xatolik!", error.message, "error");
   });
 });
 
-})
-    .catch(error => {
-        console.error('Xatolik:', error);
-        alert('Xodimlar ro\'yxatini olishda xatolik yuz berdi.');
-    });
-})     
-
-function getCookie(name) {
-    const value = document.cookie.match( new RegExp('(^| )' + name + '=([^;]+)'));
-    return value ? value[2] : null;
-}
-
-
-// Create employe
-document.getElementById("createEmployeForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById("employeName").value
-    const phone = document.getElementById("employePhone").value;
-    const password = document.getElementById("employePassword").value;
-    const role = document.getElementById("employeRole").value;
-    const token = localStorage.getItem("token");
-
-    fetch('http://localhost:7777/supplier/create', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name, phone, role, password})
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Xatolik: Xodim yaratish muvaffaqiyatsiz bo\'ldi');
-        return res.json();
-    })
-    .then(data => {
-        alert('Xodim muvaffaqiyatli yaratildi!');
-        $('#creteEmployeModal').modal('hide');
-        location.reload();
-    })
-    .catch(error => {
-        console.error('Xatolik:', error);
-        alert('Xodim yaratishda xatolik yuz berdi. Iltimos, ma\'lumotlarni tekshiring.');
-    });
-})
-
-function getCookie(name) {
-    const value = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return value ? value[2] : null;
-}
-
-// Edit employe modal ochish
+// Edit employe modalni ochish
 function openModal(employe) {
   document.getElementById("editEmployeId").value = employe.id;
   document.getElementById("editEmployeName").value = employe.name;
@@ -112,7 +102,7 @@ function closeModal() {
   document.getElementById("editEmployeModal").style.display = "none";
 }
 
-// Modal tashqarisiga bosganda yopish
+// Modal tashqarisiga bosilganda yopish
 window.onclick = function (event) {
   const modal = document.getElementById("editEmployeModal");
   if (event.target == modal) {
@@ -120,7 +110,7 @@ window.onclick = function (event) {
   }
 };
 
-// Edit formni submit qilish
+// Employe tahrirlash
 document.getElementById("editEmployeForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -128,79 +118,69 @@ document.getElementById("editEmployeForm").addEventListener("submit", function (
   const name = document.getElementById("editEmployeName").value;
   const phone = document.getElementById("editEmployePhone").value;
   const role = document.getElementById("editEmployeRole").value;
+  const token = localStorage.getItem("token");
 
-  fetch(`http://localhost:7777/supplier/${id}/update`, {
-    method: 'PUT',
+fetch(`http://localhost:7777/supplier/${id}/update`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ name, phone, role })
+    body: JSON.stringify({ name, phone, role }),
   })
-    .then(res => res.json())
-    .then(data => {
-      alert('Xodim muvaffaqiyatli yangilandi!');
-      closeModal();
-      location.reload();
+    .then((res) => {
+      if (!res.ok) throw new Error("Xodim yangilashda xatolik");
+      return res.json();
     })
-    .catch(err => {
-      console.error('Xatolik:', err);
+    .then(() => {
+      Swal.fire("Muvaffaqiyatli!", "Xodim ma'lumotlari yangilandi!", "success");
+      closeModal();
+      setTimeout(() => location.reload(), 1000);
+    })
+    .catch((err) => {
+      console.error("Xatolik:", err);
+      Swal.fire("Xatolik!", "Xodim yangilashda xatolik yuz berdi.", "error");
     });
 });
 
-
-// Delete employe
+// Employeni o'chirish
 function deleteEmploye(id) {
-    Swal.fire({
-        title: 'Ishonchingiz komilmi?',
-        text: "Bu xodim o‘chiriladi!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ha, o‘chir!',
-        cancelButtonText: 'Bekor qilish'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const token = localStorage.getItem("token");
+  Swal.fire({
+    title: "Ishonchingiz komilmi?",
+    text: "Bu xodim o‘chiriladi!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Ha, o‘chir!",
+    cancelButtonText: "Bekor qilish",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
 
-            fetch(`http://localhost:7777/supplier/${id}/delete`, {
-                method: 'DELETE',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-            .then(res => {
-                if (res.ok) {
-                    Swal.fire(
-                        'O‘chirildi!',
-                        'Xodim muvaffaqiyatli o‘chirildi.',
-                        'success'
-                    ).then(() => {
-                        location.reload(); // Ro‘yxatni yangilash
-                    });
-                } else {
-                    Swal.fire(
-                        'Xatolik!',
-                        'Xodimni o‘chirishda muammo yuz berdi.',
-                        'error'
-                    );
-                }
-            })
-            .catch(error => {
-                console.error('Xatolik:', error);
-                Swal.fire(
-                    'Xatolik!',
-                    'Tarmoqda xatolik yuz berdi.',
-                    'error'
-                );
-            });
-        }
-    });
+      fetch(`http://localhost:7777/supplier/${id}/delete`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("O'chirishda xatolik");
+          Swal.fire("O‘chirildi!", "Xodim muvaffaqiyatli o‘chirildi.", "success").then(() =>
+            location.reload()
+          );
+        })
+        .catch((error) => {
+          console.error("Xatolik:", error);
+          Swal.fire("Xatolik!", "Xodimni o‘chirishda xatolik yuz berdi.", "error");
+        });
+    }
+  });
 }
 
-// logout
+// Logout
 function logout() {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = "login.html";
+  document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  window.location.href = "login.html";
 }
