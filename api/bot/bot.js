@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api'
 import { BOT_TOKEN } from '../config/config.js'
+import { start } from './conversations/start.conversation.js'
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true })
 
@@ -12,14 +13,7 @@ bot.on("message", async msg => {
     const chatId = msg.chat.id
     console.log(chatId);
     
-    const text = msg.text
-    console.log(text);
-    
-    const name = msg.from.username
-
-    if (text === '/start') {
-        await bot.sendMessage(chatId, `Assalomu alaykum hurmatli @${name}, Botimizga xush kelibbsiz!`)
-    }
+    start(msg)
 })
 
 console.log('Telegram bot ishga tushdi!');

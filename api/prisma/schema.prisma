@@ -19,6 +19,7 @@ enum Role {
   admin
   superAdmin
   supplier
+  user
 }
 
 model Admin {
@@ -74,4 +75,13 @@ model Medicine {
   image           String   @db.Text
   pharmacyId      Int
   pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  telegramId Int       @unique
+  name      String?     
+  language  String?     
+  role      Role
+  createdAt DateTime   @default(now())
 }
