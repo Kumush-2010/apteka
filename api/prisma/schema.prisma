@@ -19,7 +19,7 @@ enum Role {
   admin
   superAdmin
   supplier
-  user
+  User
 }
 
 model Admin {
@@ -79,9 +79,10 @@ model Medicine {
 
 model User {
   id        Int        @id @default(autoincrement())
-  telegramId Int       @unique
-  name      String?     
+  telegramId BigInt      @unique
+  name      String? 
+  phone     String?        
   language  String?     
-  role      Role
+  role      Role?
   createdAt DateTime   @default(now())
 }

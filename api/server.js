@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }))
 
 appRouter(app)
 
-app.use((error, req, res, next) => {
+app.use((error, req, res, next) => { 
     console.log(error);
 
     return res.status(500).send({
