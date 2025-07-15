@@ -1,4 +1,3 @@
-import { text } from 'express';
 import prisma from '../../prisma/setup.js';
 import messages from '../messages.js';
 
