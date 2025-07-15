@@ -16,10 +16,6 @@ app.use(express.urlencoded({ extended: true }))
 
 appRouter(app)
 
-app.get('/', (req, res) => {
-  res.redirect('/login');
-});
-
 app.use((error, req, res, next) => { 
     console.log(error);
 

@@ -26,7 +26,7 @@ export function registerProfileConversation(bot) {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Yangilash', callback_data: 'update_profile' }]
+                    [{ text: 'Yangilash', callback_data: 'update_profile' }, { text: 'Savat', callback_data: 'backet' }],
                 ]
             }
         });
@@ -45,7 +45,7 @@ export function registerProfileConversation(bot) {
             });
 
             await bot.sendMessage(chatId, "Ismingizni kiriting:");
-            return bot.answerCallbackQuery(query.id);
+            await bot.answerCallbackQuery(query.id);
         }
 
         // Tilni tanlash

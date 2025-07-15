@@ -5,6 +5,7 @@ import { searchConversation } from './conversations/search.conversation.js';
 import { registerProfileConversation } from './conversations/profil.conversation.js';
 import { registerLanguageConversation } from './conversations/language.conversation.js';
 import { registerContactConversation } from './conversations/contact.conversation.js';
+import { registerInfoConversation } from './conversations/info.conversation.js';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
@@ -18,6 +19,7 @@ searchConversation(bot);
 registerProfileConversation(bot);
 registerLanguageConversation(bot);
 registerContactConversation(bot);
+registerInfoConversation(bot);
 
 bot.on("polling_error", (error) => {
   console.error("Polling xatosi:", error);
