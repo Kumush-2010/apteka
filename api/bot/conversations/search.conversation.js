@@ -102,11 +102,7 @@ export function searchConversation(bot) {
                 // Asosiy menyu tugmalari
                 await bot.sendMessage(chatId, 'Quyidagilardan birini tanlang:', {
                     reply_markup: {
-                        keyboard: [
-                            [{ text: 'Dori qidirish' }, { text: 'Profil' }],
-                            [{ text: 'Savat' }, { text: 'Til' }],
-                            [{ text: 'Bog\'lanish' }]
-                        ],
+                       keyboard: getMainKeyboard(session.language),
                         resize_keyboard: true,
                         one_time_keyboard: true
                     }

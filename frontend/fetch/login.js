@@ -28,13 +28,15 @@ document
       .then((data) => {
         console.log("Muvaffaqiyatli kirish:", data);
         localStorage.setItem("token", data.token);
-        window.location.href = "/frontend/admins.html";
-        alert("Muvaffaqiyatli kirish!");
+        window.location.href = "/frontend/admins.html"
+        Swal.fire("Kirish muvaffaqiyatli bo'ldi!")
       })
       .catch((error) => {
         console.error("Xatolik:", error);
-        alert(
-          "Kirish amalga osmadi. Iltimos, telefon raqami yoki parolni tekshiring."
-        );
+        Swal.fire({
+          icon: "error",
+          title: "Xatolik!",
+          text: "Kirish amalga oshmadi. Iltimos, telefon raqami yoki parolni tekshiring.",
+        }) 
       });
   });

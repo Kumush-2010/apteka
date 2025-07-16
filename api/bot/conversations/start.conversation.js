@@ -1,4 +1,3 @@
-
 import prisma from '../../prisma/setup.js';
 import messages from '../messages.js';
 
@@ -7,10 +6,34 @@ const sessions = new Map();
 export function startConversation(bot) {
   bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    sessions.set(chatId, {})
+
+    // 🔎 1. Foydalanuvchi bazada bor yoki yo‘qligini tekshiramiz
+    const user = await prisma.user.findUnique({
+      where: { telegramId: BigInt(chatId) }
+    });
+
+    if (user) {
+      const lang = user.language;
+      const name = user.name;
+
+      // 👋 2. Salomlashish va menyuni yuborish
+      await bot.sendMessage(chatId, `${messages[lang].welcome_back}, ${name}!`, {
+        reply_markup: {
+          keyboard: getMainKeyboard(lang),
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      });
+      return;
+    }
+
+    // 🆕 Yangi foydalanuvchi uchun til tanlash oynasi
+    sessions.set(chatId, {});
     const langMessage = `
-    ${messages.uz.choose_language}\n${messages.ru.choose_language}\n${messages.en.choose_language}
-    `
+    ${messages.uz.choose_language}
+    ${messages.ru.choose_language}
+    ${messages.en.choose_language}
+    `;
 
     bot.sendMessage(chatId, langMessage.trim(), {
       reply_markup: {
@@ -77,19 +100,40 @@ export function startConversation(bot) {
         reply_markup: { remove_keyboard: true }
       });
 
-      await bot.sendMessage(chatId, 'Quyidagilardan birini tanlang:', {
+      await bot.sendMessage(chatId, `${messages[session.language].welcome_back}, ${session.name}!`, {
         reply_markup: {
-          keyboard: [
-            [{ text: 'Dori qidirish' }, { text: 'Profil'}],
-            [{ text: 'Savat'},{ text: 'Til'}],
-            [{ text: 'Bog\'lanish'}],
-          ],
+          keyboard: getMainKeyboard(session.language),
           resize_keyboard: true,
           one_time_keyboard: true
         }
-      })
+      });
 
       sessions.delete(chatId);
     }
   });
 }
+
+// 📋 Har bir til uchun menyu variantlari
+export function getMainKeyboard(lang) {
+  if (lang === 'uz') {
+    return [
+      [{ text: 'Dori qidirish' }, { text: 'Profil' }],
+      [{ text: 'Savat' }, { text: 'Til' }],
+      [{ text: 'Bog\'lanish' }]
+    ];
+  } else if (lang === 'ru') {
+    return [
+      [{ text: 'Поиск лекарства' }, { text: 'Профиль' }],
+      [{ text: 'Корзина' }, { text: 'Язык' }],
+      [{ text: 'Связь' }]
+    ];
+  } else if (lang === 'en') {
+    return [
+      [{ text: 'Search drug' }, { text: 'Profile' }],
+      [{ text: 'Basket' }, { text: 'Language' }],
+      [{ text: 'Contact' }]
+    ];
+  }
+}
+
+
