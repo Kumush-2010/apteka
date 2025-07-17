@@ -90,6 +90,7 @@ function loadMedicines() {
               data-sizebox="${med.one_box_price}" 
               data-manufacturer="${med.made}"
               data-warehouse="${med.warehouse}"
+              data-gram="${med.gram}"
               >
             <i class="fa fa-eye"></i></a>
             <a href="#" onclick="openEditModal(this)" 
@@ -102,6 +103,7 @@ function loadMedicines() {
               data-sizedisk="${med.one_plate_price}" 
               data-sizebox="${med.one_box_price}" 
               data-manufacturer="${med.made}"
+              data-gram="${med.gram}"
               data-image="${med.image}">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
@@ -139,11 +141,11 @@ function bindCreateForm() {
 
     const imageInput = document.getElementById("imageFile");
     if (!imageInput || !imageInput.files.length) {
-     Swal.fire({
+      Swal.fire({
         icon: "error",
-        title: "Xatolik!", 
+        title: "Xatolik!",
         text: "Iltimos, dori rasmni tanlang.",
-     })
+      });
       return;
     }
 
@@ -157,6 +159,7 @@ function bindCreateForm() {
       return;
     }
 
+    // Data object to be sent in the request
     const formData = new FormData();
     formData.append("uz_name", document.getElementById("nameUz").value.trim());
     formData.append("ru_name", document.getElementById("nameRu").value.trim());
@@ -167,13 +170,15 @@ function bindCreateForm() {
     formData.append("one_plate", document.getElementById("sizeDisk").value);
     formData.append("one_box", document.getElementById("sizeBox").value);
     formData.append("made", document.getElementById("manufacturer").value.trim());
+    formData.append("gram", document.getElementById("gram").value.trim());
     formData.append("pharmacyId", pharmacyId); 
-
     formData.append("image", imageInput.files[0]);
 
+    // Check the data in the form before sending it
     for (let pair of formData.entries()) {
-      console.log(pair[0]+ ': ' + pair[1]);
+      console.log(pair[0] + ': ' + pair[1]);
     }
+
     fetch("http://localhost:7777/medicine/create", {
       method: "POST",
       headers: {
@@ -181,38 +186,38 @@ function bindCreateForm() {
       },
       body: formData,
     })
-      .then(res => {
-        if (!res.ok) {
-          return res.json().then(err => {
-            throw new Error(err.error || "Serverdan nomalum xatolik.");
-          });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data.success) {
-     Swal.fire({
-        icon: 'success',
-        title: 'Muvaffaqiyatli!',
-        text: 'Dori muvaffaqiyatli qo‘shildi!',
-     }).then(() => {
-      $('#createMedicineModa').modal('hide');
-      fetchPharmacies();
-     })
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Xatolik!',
-        text: data.error || 'Dori qo‘shishda xatolik yuz berdi!'
-      });
-    }
-        form.reset();
-        location.reload();
-      })
-      .catch(err => {
-        console.error("Xatolik:", err);
-        alert("Xatolik: " + err.message);
-      });
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => {
+          throw new Error(err.error || "Serverdan nomalum xatolik.");
+        });
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Muvaffaqiyatli!',
+          text: 'Dori muvaffaqiyatli qo‘shildi!',
+        }).then(() => {
+          $('#createMedicineModa').modal('hide');
+          fetchPharmacies();
+        })
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Xatolik!',
+          text: data.error || 'Dori qo‘shishda xatolik yuz berdi!',
+        });
+      }
+      form.reset();
+      location.reload();
+    })
+    .catch(err => {
+      console.error("Xatolik:", err);
+      alert("Xatolik: " + err.message);
+    });
   });
 }
 
@@ -231,6 +236,7 @@ function openEditModal(el) {
   document.getElementById("sizeBox").value = el.dataset.sizebox;
   document.getElementById("manufacturer").value = el.dataset.manufacturer;
   document.getElementById("editPharmacySelect").value = el.dataset.pharmacyid;
+  document.getElementById("gram").value = el.dataset.gram || "";
 
   const imagePreview = document.getElementById("imagePreview");
   if (el.dataset.image) {
@@ -275,6 +281,8 @@ function bindEditForm() {
       made: document.getElementById("manufacturer").value,
       warehouse: document.getElementById("warehouse").value,
       pharmacyId: +document.getElementById("editPharmacySelect").value,
+      // `gram` ni matn sifatida yuborish
+      gram: (document.getElementById("gram").value.trim()) || "0", // Agar bo'sh bo'lsa, "0" qaytadi
     };
 
     fetch(`http://localhost:7777/medicine/${id}/update`, {
@@ -285,31 +293,34 @@ function bindEditForm() {
       },
       body: JSON.stringify(updated),
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Yangilashda xatolik.");
-        return res.json();
-      })
-      .then((data) => {
-         closeEditModal();
-        if (data.success) {
-          Swal.fire({
-            icon: "success",  
-            title: "Yangilandi!",
-            text: "Dori muvaffaqiyatli yangilandi!",
-          });
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Xatolik!",
-            text: "Dori yangilashda xatolik yuz berdi!",
-          });
-        }
-        // location.reload();
-      })
-      .catch(err => {
-        console.error("Xatolik:", err);
-        alert("Yangilashda muammo yuz berdi.");
-      });
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => {
+          throw new Error(err.error || "Yangilashda xatolik.");
+        });
+      }
+      return res.json();
+    })
+    .then((data) => {
+      closeEditModal();
+      if (data.success) {
+        Swal.fire({
+          icon: "success",  
+          title: "Yangilandi!",
+          text: "Dori muvaffaqiyatli yangilandi!",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Xatolik!",
+          text: "Dori yangilashda xatolik yuz berdi!",
+        });
+      }
+    })
+    .catch(err => {
+      console.error("Xatolik:", err);
+      alert("Yangilashda muammo yuz berdi.");
+    });
   });
 }
 
@@ -365,6 +376,7 @@ function openViewModal(el) {
   document.getElementById("viewSizeBox").textContent = el.dataset.sizebox || "-";
   document.getElementById("viewManufacturer").textContent = el.dataset.manufacturer || "-";
   document.getElementById("viewWarehouse").textContent = el.dataset.warehouse || "-";
+  document.getElementById("viewGram").textContent = el.dataset.gram || "-";
 
   
   document.getElementById("viewMedicineModal").style.display = "block";

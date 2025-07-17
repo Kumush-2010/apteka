@@ -52,6 +52,11 @@ const createMedicineSchema = Joi.object({
         'number.empty': 'Omborda qancha ekanligi bo‘sh bo‘lmasligi kerak!',
         'any.required': 'Omborda qancha ekanligini kiritish talb qilinadi!'
     }),
+    gram: Joi.string().empty('').required().messages({
+        'string.base': 'Gram faqat matn boʻlishi kerak!',
+        'string.empty': 'Gram bo‘sh bo‘lmasligi kerak!',
+        'any.required': 'Gram kiritish talb qilinadi!'
+    }),
     pharmacyId: Joi.required().messages({
         'any.required': 'Dorixona Idsi talab qilinadi!'
     }),
@@ -90,6 +95,9 @@ const updateMedicineSchema = Joi.object({
     }),
     warehouse: Joi.number().integer().messages({
         'number.base': 'Omborda qancha ekanligi raqam boʻlishi kerak!',
+    }),
+    gram: Joi.string().messages({
+        'string.base': 'Gram faqat matn boʻlishi kerak!',
     }),
     pharmacyId: Joi.required().messages({
         'any.required': 'Dorixona Idsi talab qilinadi!'

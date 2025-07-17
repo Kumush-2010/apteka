@@ -1,5 +1,6 @@
 
 import prisma from "../../prisma/setup.js";
+import { getMainKeyboard } from "./start.conversation.js";
 
 const updateState = new Map();
 
@@ -78,11 +79,7 @@ export function registerProfileConversation(bot) {
             return bot.sendMessage(chatId, profileText, {
                 parse_mode: 'Markdown',
                 reply_markup: {
-                    keyboard: [
-                        [{ text: 'Dori qidirish' }, { text: 'Profil' }],
-                        [{ text: 'Savat' }, { text: 'Til' }],
-                        [{ text: 'Bog\'lanish' }]
-                    ],
+                    keyboard: getMainKeyboard(session.language),
                     resize_keyboard: true
                 }
             });

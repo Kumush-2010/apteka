@@ -23,7 +23,7 @@ export function registerInfoConversation(bot) {
     } else {
       await bot.sendMessage(chatId, "Til bo‘yicha ma’lumot topilmadi.");
     }
-  });
+  }); 
 }
 
 // Matnlarni tilga qarab qaytaradigan funksiya

@@ -70,6 +70,7 @@ model Medicine {
   one_box         String   @db.Text
   one_plate_price Int      @db.Integer
   one_box_price   Int      @db.Integer
+  gram           String   @db.Text
   warehouse       Int      @db.Integer
   image_path      String  @db.Text
   image           String   @db.Text
