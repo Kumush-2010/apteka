@@ -73,7 +73,7 @@ export function startConversation(bot) {
             text: messages[session.language].send_contact,
             request_contact: true
           }]],
-          resize_keyboard: true,
+          resize_keyboard: true, 
           one_time_keyboard: true
         }
       });
@@ -99,7 +99,7 @@ export function startConversation(bot) {
       bot.sendMessage(chatId, messages[session.language].success, {
         reply_markup: { remove_keyboard: true }
       });
-
+  
       await bot.sendMessage(chatId, `${messages[session.language].welcome_back}, ${session.name}!`, {
         reply_markup: {
           keyboard: getMainKeyboard(session.language),

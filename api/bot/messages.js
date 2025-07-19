@@ -6,7 +6,7 @@ const messages = {
     send_contact: 'Kontaktni yuborish',
     success: 'Ro‘yxatdan muvaffaqiyatli o‘tdingiz!',
     message: 'Asosiy menyu:',
-    welcome_back: 'Xush kelibsiz qaytib, hurmatli',
+    welcome_back: 'Botimiz xush kelibsiz, hurmatli',
     choose: 'Quyidagilardan birini tanlang:'
   },
   ru: {
@@ -16,7 +16,7 @@ const messages = {
     send_contact: 'Отправить контакт',
     success: 'Вы успешно зарегистрировались!',
     message: 'Главное меню:',
-    welcome_back: 'С возвращением, уважаемый',
+    welcome_back: 'Добро пожаловать обратно, уважаемый',
     choose: 'Выберите один из следующих вариантов:'
   },
   en: {
@@ -26,7 +26,7 @@ const messages = {
     send_contact: 'Send Contact',
     success: 'You have successfully registered!',
     message: 'Main menu:',
-    welcome_back: 'Welcome back dear',
+    welcome_back: 'Welcome back, dear',
     choose: 'Please choose one of the following:'
   }
 };
