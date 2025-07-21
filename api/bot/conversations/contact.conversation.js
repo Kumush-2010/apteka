@@ -1,6 +1,7 @@
 
 export function registerContactConversation(bot) {
-    bot.onText(/Bog'lanish/, async (msg) => {
+    const contact = /^\/?(Bog'lanish|Contact|Связь)$/i;
+    bot.onText(contact, async (msg) => {
         const chatId = msg.chat.id;
 
        bot.sendMessage(chatId, contactText, {

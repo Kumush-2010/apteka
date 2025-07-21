@@ -1,4 +1,3 @@
-
 import { BUCKET_NAME, SUPABASE_URL } from "../../config/config.js";
 import prisma from "../../prisma/setup.js";
 import messages from "../messages.js";
@@ -37,23 +36,24 @@ const texts = {
         ru: "Добавлено в корзину ✅",
         en: "Added to cart ✅"
     }
-}
-
+};
 
 export function searchConversation(bot) {
     bot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text;
+        const dori= /^\/?(Dori qidirish|Search drug|Поиск лекарства)$/i;
 
-        if (text === `${messages.uz.search}` || text === `${messages.ru.search}` || text === `${messages.en.search}`) {
-          searchStates.set(chatId, 'awaiting_query');
+        if (dori) {
+            searchStates.set(chatId, 'awaiting_query');
 
-          const user = await prisma.user.findUnique({
-              where: { telegramId: BigInt(chatId) }
-          });
-          const lang = user?.language || 'uz';
+            const user = await prisma.user.findUnique({
+                where: { telegramId: BigInt(chatId) }
+            });
 
-          return bot.sendMessage(chatId, texts.search_prompt[lang])
+            const lang = user?.language || 'uz';
+
+            return bot.sendMessage(chatId, texts.search_prompt[lang]);
         }
 
         if (searchStates.get(chatId) === 'awaiting_query') {
@@ -87,20 +87,22 @@ export function searchConversation(bot) {
             });
 
             if (results.length === 0) {
-                await bot.sendMessage(chatId, `"${query}" ${texts.not_found[lang]}`);
-            } 
+                const notFoundText = texts.not_found[lang].replace('{query}', query);
+                await bot.sendMessage(chatId, notFoundText);
+                return; // ❗ kerak
+            }
 
             searchResultsMap.set(chatId, results);
 
             let message = `<b>${texts.found_medicines[lang]}</b>\n\n`;
             results.forEach((med, index) => {
-                message += `${index + 1}, ${med[nameField]}, ${med.gram} gram\n`
-            })
+                message += `${index + 1}. ${med[nameField]} — ${med.gram}g\n`;
+            });
 
             const inlineKeyboard = results.map((_, index) => [{
                 text: `${index + 1}`,
                 callback_data: `select_med_${index}`
-            }])
+            }]);
 
             await bot.sendMessage(chatId, message, {
                 parse_mode: 'HTML',
@@ -118,12 +120,13 @@ export function searchConversation(bot) {
         const user = await prisma.user.findUnique({
             where: { telegramId: BigInt(chatId) }
         });
+
         const lang = user?.language || 'uz';
 
-        if(data.startsWith('select_med_')) {
+        if (data.startsWith('select_med_')) {
             const index = parseInt(data.split('select_med_')[1]);
             const results = searchResultsMap.get(chatId);
-            if(!results || !results[index]) return;
+            if (!results || !results[index]) return;
 
             const med = results[index];
 
@@ -138,12 +141,12 @@ export function searchConversation(bot) {
                 ? med.image_path
                 : `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${med.image_path}`;
 
-                              const caption = `
+            const caption = `
 <b>${name}</b>
 🏭 Ishlab chiqaruvchi: ${med.made}
 📦 Omborda: ${med.warehouse} dona
 
-💊 1 disk: ${med.one_plate_price} so'm (${med.one_plate})+
+💊 1 disk: ${med.one_plate_price} so'm (${med.one_plate})
 📦 1 quti: ${med.one_box_price} so'm (${med.one_box})
 
 🏪 Apteka: ${pharmacyName}
@@ -151,38 +154,41 @@ export function searchConversation(bot) {
 🧭 Mo'ljal: ${destination}
 📞 Tel: ${phone}
 🌐 <a href="${locationUrl}">Joylashuv</a>
-                    `.trim();
-        const inlineKeyboard = {
-            inline_keyboard: [
-                [{
-                    text: texts.add_to_cart[lang],
-                    callback_data: `add_to_cart_${med.id}`
-                }]
-            ]
+            `.trim();
+
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [{
+                        text: texts.add_to_cart[lang],
+                        callback_data: `add_to_cart_${med.id}`
+                    }]
+                ]
+            };
+
+            if (imageUrl && imageUrl.startsWith('http')) {
+                await bot.sendPhoto(chatId, imageUrl, {
+                    caption: caption,
+                    parse_mode: 'HTML',
+                    reply_markup: inlineKeyboard
+                });
+            } else {
+                await bot.sendMessage(chatId, caption, {
+                    parse_mode: 'HTML',
+                    reply_markup: inlineKeyboard,
+                    disable_web_page_preview: true
+                });
+            }
         }
 
-        if(imageUrl && imageUrl.startsWith('http')) {
-            await bot.sendPhoto(chatId, imageUrl, {
-                caption: caption,
-                parse_mode: 'HTML',
-                reply_markup: inlineKeyboard
-            })
-        } else {
-            await bot.sendMessage(chatId, caption, {
-                parse_mode: 'HTML',
-                reply_markup: inlineKeyboard,
-                disable_web_page_preview: true
+        if (data.startsWith('add_to_cart_')) {
+            const medId = parseInt(data.split('add_to_cart_')[1]);
+
+            // ❗ Bu yerda savatga yozish kerak bo‘lsa, shu yerga prisma query qo‘shiladi
+
+            await bot.answerCallbackQuery(query.id, {
+                text: texts.added_to_cart[lang],
+                show_alert: false
             });
         }
-    }
-
-    if(data.startsWith('add_to_cart_')){
-        const medId = parseInt(data.split('add_to_cart_')[1])
-
-        await bot.answerCallbackQuery(query.id, {
-            text: texts.added_to_cart[lang],
-            show_alert: false
-        });
-    }
     });
 }
