@@ -5,8 +5,9 @@ import { getMainKeyboard } from "./start.conversation.js";
 const updateState = new Map();
 
 export function registerProfileConversation(bot) {
+    const profile = /^\/?(Profil|Профиль|Profile)$/i;
     // Profilni ko‘rsatish
-    bot.onText(/Profil/, async (msg) => {
+    bot.onText(profile, async (msg) => {
         const chatId = msg.chat.id;
         const telegramId = msg.from.id.toString();
 

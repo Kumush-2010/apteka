@@ -31,6 +31,7 @@ const texts = {
         ru: "Добавить в корзину",
         en: "Add to cart"
     },
+    
     added_to_cart: {
         uz: "Savatga qo‘shildi ✅",
         ru: "Добавлено в корзину ✅",
