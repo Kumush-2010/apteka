@@ -1,16 +1,22 @@
-
 export function registerContactConversation(bot) {
     const contact = /^\/?(Bog'lanish|Contact|Связь)$/i;
     bot.onText(contact, async (msg) => {
         const chatId = msg.chat.id;
 
-       bot.sendMessage(chatId, contactText, {
-        parse_mode: 'Markdown',
-       })
-    })
+        const lang = msg.from.language_code || 'uz'; 
+
+        const text = contactText(lang); 
+        if (text) {
+            bot.sendMessage(chatId, text, {
+                parse_mode: 'Markdown',
+            });
+        } else {
+            console.error("Tilga mos xabar topilmadi.");
+        }
+    });
 }
 
-function contactText(lang) {   
+function contactText(lang) {
     if (lang === 'uz') {
         return `*Biz bilan bog'lanish uchun:*\n\n` +
             `Telefon: +998904385114\n` +
@@ -24,5 +30,5 @@ function contactText(lang) {
             `Phone: +998904385114\n` +
             `Working hours: 9:00 AM - 6:00 PM (Monday - Friday)\n\n`;
     }
-    return null;
+    return null; 
 }

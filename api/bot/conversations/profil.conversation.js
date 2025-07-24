@@ -1,15 +1,33 @@
-
 import prisma from "../../prisma/setup.js";
+import messages from "../messages.js";
 import { getMainKeyboard } from "./start.conversation.js";
 
 const updateState = new Map();
 
+const texts = {
+    ism: {
+        uz: "Ismingizni kiriting:",
+        ru: "Введите ваше имя:",
+        en: "Enter your name:"
+    }, 
+    telefon: {
+        uz: "📞 Telefon raqamingizni yuboring:",
+        ru: "📞 Отправьте ваш номер телефона:",
+        en: "📞 Send your phone number:",
+    },
+    til: {
+        uz: "Tilni tanlang:",
+        ru: "Выберите язык:",
+        en: "Choose a language:"
+    },
+}
+
 export function registerProfileConversation(bot) {
     const profile = /^\/?(Profil|Профиль|Profile)$/i;
-    // Profilni ko‘rsatish
     bot.onText(profile, async (msg) => {
         const chatId = msg.chat.id;
         const telegramId = msg.from.id.toString();
+        let session = updateState.get(chatId);
 
         const user = await prisma.user.findUnique({
             where: { telegramId }
@@ -19,26 +37,25 @@ export function registerProfileConversation(bot) {
             return bot.sendMessage(chatId, "Profil topilmadi.");
         }
 
-        const profileText = `*Profil ma'lumotlari:*\n\n` +
-            `Ism: ${user.name || 'Noma\'lum'}\n` +
-            `Telefon: ${user.phone || 'yo‘q'}\n` +
-            `Til: ${user.language || 'yo‘q'}\n` +
-            `Telegram ID: ${user.telegramId}\n`;
+        if (!session) {
+            session = { language: user.language || 'uz' }; 
+            updateState.set(chatId, session);
+        }
 
-        return bot.sendMessage(chatId, profileText, {
+        return bot.sendMessage(chatId, profileText(user.language, user), {
             parse_mode: 'Markdown',
             reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Yangilash', callback_data: 'update_profile' }, { text: 'Savat', callback_data: 'backet' }],
-                ]
+                inline_keyboard: await keyboard(session.language) 
             }
         });
     });
 
-    // Callback query (Yangilash bosilganda)
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
-        const telegramId = query.from.id.toString();
+        const telegramId = query.from.id.toString(); 
+        const user = await prisma.user.findUnique({
+            where: { telegramId }
+        });
 
         if (query.data === 'update_profile') {
             updateState.set(chatId, {
@@ -46,12 +63,11 @@ export function registerProfileConversation(bot) {
                 data: {},
                 telegramId
             });
-
-            await bot.sendMessage(chatId, "Ismingizni kiriting:");
+            const lang = user?.language || 'uz';
+            await bot.sendMessage(chatId, texts.ism[lang]);
             await bot.answerCallbackQuery(query.id);
         }
 
-        // Tilni tanlash
         if (query.data.startsWith('lang_')) {
             const lang = query.data.replace('lang_', '');
             const state = updateState.get(chatId);
@@ -59,50 +75,41 @@ export function registerProfileConversation(bot) {
 
             state.data.language = lang;
 
-            // Ma'lumotlarni yangilash
             await prisma.user.update({
                 where: { telegramId: state.telegramId },
                 data: state.data
             });
-
-            updateState.delete(chatId);
-
             const updatedUser = await prisma.user.findUnique({
                 where: { telegramId: state.telegramId }
             });
 
-            const profileText = `✅ *Profil yangilandi:*\n\n` +
-                `Ism: ${updatedUser.name}\n` +
-                `Telefon: ${updatedUser.phone}\n` +
-                `Til: ${updatedUser.language}\n` +
-                `Telegram ID: ${updatedUser.telegramId}`;
+            updateState.delete(chatId);
 
-            return bot.sendMessage(chatId, profileText, {
+            return bot.sendMessage(chatId, updateProfilText(updatedUser.language, updatedUser), {
                 parse_mode: 'Markdown',
                 reply_markup: {
-                    keyboard: getMainKeyboard(session.language),
+                    keyboard: await getMainKeyboard(updatedUser.language),
                     resize_keyboard: true
                 }
             });
         }
     });
 
-    // Matn yoki contact qabul qilish
     bot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const state = updateState.get(chatId);
+        const lang = state?.data.language || 'uz';
         if (!state) return;
 
-        // Contact yuborilgan bo‘lsa
         if (msg.contact && state.step === 'awaiting_phone') {
             const phone = msg.contact.phone_number;
             state.data.phone = phone;
             state.step = 'awaiting_language';
 
-            return bot.sendMessage(chatId, "Tilni tanlang:", {
+            return bot.sendMessage(chatId, texts.til[lang], {
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }],
+                        [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }], 
                         [{ text: "🇷🇺 Rus", callback_data: 'lang_ru' }],
                         [{ text: "🇬🇧 English", callback_data: 'lang_en' }]
                     ]
@@ -115,11 +122,10 @@ export function registerProfileConversation(bot) {
         if (state.step === 'awaiting_name') {
             state.data.name = text;
             state.step = 'awaiting_phone';
-
-            return bot.sendMessage(chatId, "📞 Telefon raqamingizni yuboring:", {
+            return bot.sendMessage(chatId, texts.telefon[lang], {
                 reply_markup: {
                     keyboard: [
-                        [{ text: "📲 Raqamni ulashish", request_contact: true }],
+                        [{ text: messages[lang].send_contact, request_contact: true }],
                         [{ text: "⬅️ Orqaga" }]
                     ],
                     resize_keyboard: true,
@@ -133,7 +139,7 @@ export function registerProfileConversation(bot) {
                 state.data.phone = text;
                 state.step = 'awaiting_language';
 
-                return bot.sendMessage(chatId, "Tilni tanlang:", {
+                return bot.sendMessage(chatId, texts.til[lang], {
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }],
@@ -143,8 +149,47 @@ export function registerProfileConversation(bot) {
                     }
                 });
             } else {
-                return bot.sendMessage(chatId, "❗ Iltimos, +998 bilan boshlanuvchi raqam kiriting yoki kontakt ulashing.");
+                return bot.sendMessage(chatId, "❗️ Iltimos, +998 bilan boshlanuvchi raqam kiriting yoki kontakt ulashing.");
             }
         }
     });
+}
+
+function profileText(lang, user) {
+    if (lang === 'uz') {
+        return `*Profil ma'lumotlari:*\n\nIsm: ${user.name || 'Noma\'lum'}\nTelefon: ${user.phone || 'yo‘q'}\nTil: ${user.language || 'yo‘q'}`;
+    } else if (lang === 'ru') {
+        return `*Профильная информация:*\n\nИмя: ${user.name || 'Неизвестно'}\nТелефон: ${user.phone || 'нет'}\nЯзык: ${user.language || 'нет'}`;
+    } else if (lang === 'en') {
+        return `*Profile Information:*\n\nName: ${user.name || 'Unknown'}\nPhone: ${user.phone || 'not provided'}\nLanguage: ${user.language || 'not provided'}`;
+    }
+}
+
+async function updateProfilText(lang, user) {
+    if (lang === 'uz') {
+        return `✅ *Profil yangilandi:*\n\nIsm: ${user.name}\nTelefon: ${user.phone}\nTil: ${user.language}\nTelegram ID: ${user.telegramId}`;
+    } else if (lang === 'ru') {
+        return `✅ *Профиль обновлен:*\n\nИмя: ${user.name}\nТелефон: ${user.phone}\nЯзык: ${user.language}\nTelegram ID: ${user.telegramId}`;
+    } else if (lang === 'en') {
+        return `✅ *Profile updated:*\n\nName: ${user.name}\nPhone: ${user.phone}\nLanguage: ${user.language}\nTelegram ID: ${user.telegramId}`;
+    }
+}
+
+async function keyboard(lang) {
+    if (lang === 'uz') {
+        return [
+            [{ text: 'Yangilash', callback_data: 'update_profile' }],
+            [{ text: 'Savat', callback_data: 'backet' }]
+        ];
+    } else if (lang === 'ru') {
+        return [
+            [{ text: 'Обновить', callback_data: 'update_profile' }],
+            [{ text: 'Корзина', callback_data: 'backet' }]
+        ];
+    } else if (lang === 'en') {
+        return [
+            [{ text: 'Update', callback_data: 'update_profile' }],
+            [{ text: 'Cart', callback_data: 'backet' }]
+        ];
+    }
 }
