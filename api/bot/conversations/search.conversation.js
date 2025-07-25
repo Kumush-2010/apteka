@@ -90,7 +90,7 @@ export function searchConversation(bot) {
             if (results.length === 0) {
                 const notFoundText = texts.not_found[lang].replace('{query}', query);
                 await bot.sendMessage(chatId, notFoundText);
-                return; // ❗ kerak
+                return; 
             }
 
             searchResultsMap.set(chatId, results);
@@ -183,8 +183,6 @@ export function searchConversation(bot) {
 
         if (data.startsWith('add_to_cart_')) {
             const medId = parseInt(data.split('add_to_cart_')[1]);
-
-            // ❗ Bu yerda savatga yozish kerak bo‘lsa, shu yerga prisma query qo‘shiladi
 
             await bot.answerCallbackQuery(query.id, {
                 text: texts.added_to_cart[lang],

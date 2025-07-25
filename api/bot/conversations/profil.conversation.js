@@ -110,7 +110,7 @@ export function registerProfileConversation(bot) {
                 reply_markup: {
                     inline_keyboard: [
                         [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }], 
-                        [{ text: "🇷🇺 Rus", callback_data: 'lang_ru' }],
+                        [{ text: "🇷🇺 Rus", callback_data: 'lang_ru' }], 
                         [{ text: "🇬🇧 English", callback_data: 'lang_en' }]
                     ]
                 }
