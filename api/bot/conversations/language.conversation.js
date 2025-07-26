@@ -48,7 +48,7 @@ export function registerLanguageConversation(bot) {
 
         // 🧩 Keyboard tilga qarab yangilanadi
         const mainKeyboard = getMainKeyboard(lang);
-        await bot.sendMessage(chatId, "Asosiy menyu:", {
+        await bot.sendMessage(chatId, {
             reply_markup: {
                 keyboard: mainKeyboard,
                 resize_keyboard: true,

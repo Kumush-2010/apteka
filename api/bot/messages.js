@@ -5,7 +5,7 @@ const messages = {
     send_phone: 'Telefon raqamingizni yuboring:',
     send_contact: 'Kontaktni yuborish',
     success: 'Ro‘yxatdan muvaffaqiyatli o‘tdingiz!',
-    message: 'Asosiy menyu:',
+    // message: 'Asosiy menyu:',
     welcome_back: 'Botimiz xush kelibsiz, hurmatli',
     choose: 'Quyidagilardan birini tanlang:'
   },
@@ -15,7 +15,7 @@ const messages = {
     send_phone: 'Отправьте номер телефона:',
     send_contact: 'Отправить контакт',
     success: 'Вы успешно зарегистрировались!',
-    message: 'Главное меню:',
+    // message: 'Главное меню:',
     welcome_back: 'Добро пожаловать обратно, уважаемый',
     choose: 'Выберите один из следующих вариантов:'
   },
@@ -25,7 +25,7 @@ const messages = {
     send_phone: 'Please send your phone number:',
     send_contact: 'Send Contact',
     success: 'You have successfully registered!',
-    message: 'Main menu:',
+    // message: 'Main menu:',
     welcome_back: 'Welcome back, dear',
     choose: 'Please choose one of the following:'
   }

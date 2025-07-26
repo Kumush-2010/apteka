@@ -1,6 +1,5 @@
 import { BUCKET_NAME, SUPABASE_URL } from "../../config/config.js";
 import prisma from "../../prisma/setup.js";
-import messages from "../messages.js";
 
 const searchStates = new Map();
 const searchResultsMap = new Map();
@@ -31,42 +30,55 @@ const texts = {
         ru: "Добавить в корзину",
         en: "Add to cart"
     },
-    
     added_to_cart: {
         uz: "Savatga qo‘shildi ✅",
         ru: "Добавлено в корзину ✅",
         en: "Added to cart ✅"
+    },
+    unknown_pharmacy: {
+        uz: "Noma'lum apteka",
+        ru: "Неизвестная аптека",
+        en: "Unknown pharmacy"
+    },
+    unknown_phone: {
+        uz: "Noma'lum telefon",
+        ru: "Неизвестный номер",
+        en: "Unknown phone"
+    },
+    unknown_address: {
+        uz: "Noma'lum manzil",
+        ru: "Неизвестный адрес",
+        en: "Unknown address"
     }
 };
+
+// 🧠 Foydalanuvchi tilini olish uchun yordamchi funksiya
+async function getUserLang(chatId) {
+    const user = await prisma.user.findUnique({
+        where: { telegramId: BigInt(chatId) }
+    });
+    return user?.language || 'uz';
+}
 
 export function searchConversation(bot) {
     bot.on('message', async (msg) => {
         const chatId = msg.chat.id;
-        const text = msg.text;
-        const dori= /^\/?(Dori qidirish|Search drug|Поиск лекарства)$/i;
+        const text = msg.text?.trim();
 
-        if (dori) {
+        const commandRegex = /^\/?(Dori qidirish|Search drug|Поиск лекарства)$/i;
+
+        if (commandRegex.test(text)) {
             searchStates.set(chatId, 'awaiting_query');
 
-            const user = await prisma.user.findUnique({
-                where: { telegramId: BigInt(chatId) }
-            });
-
-            const lang = user?.language || 'uz';
-
+            const lang = await getUserLang(chatId);
             return bot.sendMessage(chatId, texts.search_prompt[lang]);
         }
 
         if (searchStates.get(chatId) === 'awaiting_query') {
             searchStates.delete(chatId);
 
-            const query = text.trim();
-
-            const user = await prisma.user.findUnique({
-                where: { telegramId: BigInt(chatId) }
-            });
-
-            const lang = user?.language || 'uz';
+            const query = text;
+            const lang = await getUserLang(chatId);
 
             const nameField = {
                 uz: 'uz_name',
@@ -89,8 +101,7 @@ export function searchConversation(bot) {
 
             if (results.length === 0) {
                 const notFoundText = texts.not_found[lang].replace('{query}', query);
-                await bot.sendMessage(chatId, notFoundText);
-                return; 
+                return bot.sendMessage(chatId, notFoundText);
             }
 
             searchResultsMap.set(chatId, results);
@@ -118,24 +129,26 @@ export function searchConversation(bot) {
         const chatId = query.message.chat.id;
         const data = query.data;
 
-        const user = await prisma.user.findUnique({
-            where: { telegramId: BigInt(chatId) }
-        });
-
-        const lang = user?.language || 'uz';
+        const lang = await getUserLang(chatId);
 
         if (data.startsWith('select_med_')) {
-            const index = parseInt(data.split('select_med_')[1]);
+            const index = parseInt(data.split('select_med_')[1], 10);
             const results = searchResultsMap.get(chatId);
             if (!results || !results[index]) return;
 
             const med = results[index];
 
-            const name = med[`${lang}_name`];
-            const pharmacyName = med.pharmacy.name || 'Noma\'lum apteka';
-            const phone = med.pharmacy.phone || 'Noma\'lum telefon';
-            const destination = med.pharmacy.destination || 'Noma\'lum manzil';
-            const address = med.pharmacy.address || 'Noma\'lum manzil';
+            const nameField = {
+                uz: 'uz_name',
+                ru: 'ru_name',
+                en: 'en_name'
+            }[lang];
+
+            const name = med[nameField];
+            const pharmacyName = med.pharmacy.name || texts.unknown_pharmacy[lang];
+            const phone = med.pharmacy.phone || texts.unknown_phone[lang];
+            const destination = med.pharmacy.destination || texts.unknown_address[lang];
+            const address = med.pharmacy.address || texts.unknown_address[lang];
             const locationUrl = med.pharmacy.locationUrl || '#';
 
             const imageUrl = med.image_path?.startsWith('http')
@@ -168,7 +181,7 @@ export function searchConversation(bot) {
 
             if (imageUrl && imageUrl.startsWith('http')) {
                 await bot.sendPhoto(chatId, imageUrl, {
-                    caption: caption,
+                    caption,
                     parse_mode: 'HTML',
                     reply_markup: inlineKeyboard
                 });
@@ -182,8 +195,6 @@ export function searchConversation(bot) {
         }
 
         if (data.startsWith('add_to_cart_')) {
-            const medId = parseInt(data.split('add_to_cart_')[1]);
-
             await bot.answerCallbackQuery(query.id, {
                 text: texts.added_to_cart[lang],
                 show_alert: false

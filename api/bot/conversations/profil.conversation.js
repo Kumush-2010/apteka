@@ -9,55 +9,64 @@ const texts = {
         uz: "Ismingizni kiriting:",
         ru: "Введите ваше имя:",
         en: "Enter your name:"
-    }, 
+    },
     telefon: {
         uz: "📞 Telefon raqamingizni yuboring:",
         ru: "📞 Отправьте ваш номер телефона:",
-        en: "📞 Send your phone number:",
+        en: "📞 Send your phone number:"
     },
     til: {
         uz: "Tilni tanlang:",
         ru: "Выберите язык:",
         en: "Choose a language:"
     },
-}
+};
 
 export function registerProfileConversation(bot) {
     const profile = /^\/?(Profil|Профиль|Profile)$/i;
+    
     bot.onText(profile, async (msg) => {
         const chatId = msg.chat.id;
         const telegramId = msg.from.id.toString();
         let session = updateState.get(chatId);
 
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
             where: { telegramId }
         });
 
         if (!user) {
-            return bot.sendMessage(chatId, "Profil topilmadi.");
+            // Foydalanuvchi mavjud bo'lmasa, yangi profil yaratish
+            user = await prisma.user.create({
+                data: {
+                    telegramId,
+                    language: 'uz', // Standart til O'zbekcha
+                }
+            });
+            return bot.sendMessage(chatId, "Sizning profilingiz yaratildi. Iltimos, keyingi ma'lumotlarni kiriting.");
         }
 
         if (!session) {
-            session = { language: user.language || 'uz' }; 
+            session = { language: user.language || 'uz' }; // Standart tilni olish
             updateState.set(chatId, session);
         }
 
         return bot.sendMessage(chatId, profileText(user.language, user), {
             parse_mode: 'Markdown',
             reply_markup: {
-                inline_keyboard: await keyboard(session.language) 
+                inline_keyboard: await keyboard(session.language)
             }
         });
     });
 
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
-        const telegramId = query.from.id.toString(); 
-        const user = await prisma.user.findUnique({
+        const telegramId = query.from.id.toString();
+        let user = await prisma.user.findUnique({
             where: { telegramId }
         });
 
         if (query.data === 'update_profile') {
+            // Profilni yangilash uchun foydalanuvchidan ma'lumot so'rash
             updateState.set(chatId, {
                 step: 'awaiting_name',
                 data: {},
@@ -69,38 +78,48 @@ export function registerProfileConversation(bot) {
         }
 
         if (query.data.startsWith('lang_')) {
+            // Tilni yangilash
             const lang = query.data.replace('lang_', '');
             const state = updateState.get(chatId);
             if (!state) return;
 
             state.data.language = lang;
 
-            await prisma.user.update({
-                where: { telegramId: state.telegramId },
-                data: state.data
-            });
-            const updatedUser = await prisma.user.findUnique({
-                where: { telegramId: state.telegramId }
-            });
+            try {
+                await prisma.user.update({
+                    where: { telegramId: state.telegramId },
+                    data: { language: lang }
+                });
 
-            updateState.delete(chatId);
+                const updatedUser = await prisma.user.findUnique({
+                    where: { telegramId: state.telegramId }
+                });
 
-            return bot.sendMessage(chatId, updateProfilText(updatedUser.language, updatedUser), {
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    keyboard: await getMainKeyboard(updatedUser.language),
-                    resize_keyboard: true
-                }
-            });
+                updateState.delete(chatId);
+
+                return bot.sendMessage(chatId, updateProfilText(updatedUser.language, updatedUser), {
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        keyboard: await getMainKeyboard(updatedUser.language),
+                        resize_keyboard: true
+                    }
+                });
+            } catch (error) {
+                console.error("Tilni yangilashda xatolik:", error);
+                return bot.sendMessage(chatId, "Tilni yangilashda xatolik yuz berdi.");
+            }
         }
     });
 
     bot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const state = updateState.get(chatId);
-        const lang = state?.data.language || 'uz';
+
         if (!state) return;
 
+        const lang = state?.data?.language || 'uz'; 
+
+        // Telefon raqamini yuborish
         if (msg.contact && state.step === 'awaiting_phone') {
             const phone = msg.contact.phone_number;
             state.data.phone = phone;
@@ -109,8 +128,8 @@ export function registerProfileConversation(bot) {
             return bot.sendMessage(chatId, texts.til[lang], {
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }], 
-                        [{ text: "🇷🇺 Rus", callback_data: 'lang_ru' }], 
+                        [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }],
+                        [{ text: "🇷🇺 Rus", callback_data: 'lang_ru' }],
                         [{ text: "🇬🇧 English", callback_data: 'lang_en' }]
                     ]
                 }
@@ -119,10 +138,11 @@ export function registerProfileConversation(bot) {
 
         const text = msg.text?.trim();
 
+        // Ismni kiritish
         if (state.step === 'awaiting_name') {
             state.data.name = text;
             state.step = 'awaiting_phone';
-            return bot.sendMessage(chatId, texts.telefon[lang], {
+            await bot.sendMessage(chatId, texts.telefon[lang], {
                 reply_markup: {
                     keyboard: [
                         [{ text: messages[lang].send_contact, request_contact: true }],
@@ -134,12 +154,13 @@ export function registerProfileConversation(bot) {
             });
         }
 
+        // Telefon raqamini kiritish
         if (state.step === 'awaiting_phone') {
             if (/^\+998\d{9}$/.test(text)) {
                 state.data.phone = text;
                 state.step = 'awaiting_language';
 
-                return bot.sendMessage(chatId, texts.til[lang], {
+                await bot.sendMessage(chatId, texts.til[lang], {
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: "🇺🇿 O‘zbek", callback_data: 'lang_uz' }],
