@@ -15,7 +15,7 @@ export function startConversation(bot) {
     if (user) {
       const lang = user.language;
       const name = user.name;
-
+ 
       // 👋 2. Salomlashish va menyuni yuborish
       await bot.sendMessage(chatId, `${messages[lang].welcome_back}, ${name}!`, {
         reply_markup: {

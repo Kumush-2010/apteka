@@ -27,7 +27,7 @@ export function registerProfileConversation(bot) {
 
   bot.onText(profile, async (msg) => {
     const chatId = msg.chat.id;
-    console.log("Profil so'rovi:", chatId);
+    // console.log("Profil so'rovi:", chatId);
     
     const telegramId = msg.from.id.toString();
     let session = updateState.get(chatId);
@@ -65,9 +65,9 @@ export function registerProfileConversation(bot) {
 
   bot.on("callback_query", async (query) => {
     const chatId = query.message.chat.id;
-    console.log("Callback", chatId);
+    // console.log("Callback", chatId);
     
-    const telegramId = query.from.id.toString();
+    const telegramId = query.from.id.toString();  
     let user = await prisma.user.findUnique({
       where: { telegramId },
     });
@@ -107,14 +107,16 @@ export function registerProfileConversation(bot) {
           updatedUser.language,
           updatedUser
         );
-        if (!profileTextUpdated) {
-          throw new Error("Xabar matni bo'sh.");
+        if (!profileTextUpdated || typeof profileTextUpdated !== "string" || profileTextUpdated.trim() === "") {
+          console.error("Bo'sh matn yuborilyapti:", profileTextUpdated);
+          return bot.sendMessage(chatId, "Xatolik: profil matni bo'sh.");
+          // throw new Error("Xabar matni bo'sh.");
         }
 
         const mainKeyboard = await getMainKeyboard(updatedUser.language);
 
         return bot.sendMessage(chatId, profileTextUpdated, {
-          parse_mode: "Markdown",
+          parse_mode: "MarkdownV2",
           reply_markup: {
             keyboard: mainKeyboard,
             resize_keyboard: true,
@@ -124,7 +126,6 @@ export function registerProfileConversation(bot) {
         console.error("Tilni yangilashda xatolik:", error);
         return bot.sendMessage(
           chatId,
-
           "❗️ Tilni yangilashda xatolik yuz berdi."
         );
       }
@@ -133,7 +134,7 @@ export function registerProfileConversation(bot) {
 
   bot.on("message", async (msg) => {
     const chatId = msg.chat.id;
-    console.log("Profil so'roviga javob:", chatId);
+    // console.log("Profil so'roviga javob:", chatId);
     const telegramId = msg.from.id.toString();
     const state = updateState.get(chatId);
 
@@ -254,23 +255,26 @@ async function updateProfilText(lang, user) {
     console.error("User object yo'q.");
     return "❗️ Foydalanuvchi ma'lumotlari topilmadi.";
   }
-  return "Profil yangiladi"
+  // return "Profil yangiladi"
 
-//   return (
-//     {
-//       uz: `✅ *Profil yangilandi:*\n\n👤 Ism: ${
-//         user.name || "Noma'lum"
-//       }\n📞 Telefon: ${user.phone || "yo‘q"}\n🌐 Til: ${user.language}`,
-//       ru: `✅ *Профиль обновлен:*\n\n👤 Имя: ${
-//         user.name || "Неизвестно"
-//       }\n📞 Телефон: ${user.phone || "нет"}\n🌐 Язык: ${user.language}`,
-//       en: `✅ *Profile updated:*\n\n👤 Name: ${
-//         user.name || "Unknown"
-//       }\n📞 Phone: ${user.phone || "not provided"}\n🌐 Language: ${
-//         user.language
-//       }`,
-//     }[lang] || "Profil yangilandi."
-//   );
+  const name = escapeMarkdownV2(user.name || "Noma'lum");
+  const phone = escapeMarkdownV2(user.phone || "yo‘q");
+  const language = escapeMarkdownV2(user.language || "yo‘q");
+  return (
+    {
+      uz: `✅ *Profil yangilandi:*\n\n👤 Ism: ${
+        name || "Noma'lum"
+      }\n📞 Telefon: ${phone || "yo‘q"}\n🌐 Til: ${language}`,
+      ru: `✅ *Профиль обновлен:*\n\n👤 Имя: ${
+        name || "Неизвестно"
+      }\n📞 Телефон: ${phone || "нет"}\n🌐 Язык: ${language}`,
+      en: `✅ *Profile updated:*\n\n👤 Name: ${
+        name || "Unknown"
+      }\n📞 Phone: ${phone || "not provided"}\n🌐 Language: ${
+        language
+      }`,
+    }[lang] || "Profil yangilandi."
+  );
 }
 
 async function keyboard(lang) {
@@ -296,4 +300,31 @@ async function keyboard(lang) {
         // [{ text: "⬅️ Back" }],
       ];
   }
+}
+
+
+function escapeMarkdownV2(text) {
+  return text
+  .replace(/_/g, "\\_")
+  .replace(/\*/g, "\\*")
+  .replace(/\[/g, "\\[")
+  .replace(/\]/g, "\\]")
+  .replace(/\(/g, "\\(")
+  .replace(/\)/g, "\\)")
+  .replace(/~/g, "\\~")
+  .replace(/`/g, "\\`")
+  .replace(/>/g, "\\>")
+  .replace(/#/g, "\\#")
+  .replace(/\+/g, "\\+")
+  .replace(/-/g, "\\-")
+  .replace(/=/g, "\\=")
+  .replace(/\|/g, "\\|")
+  .replace(/{/g, "\\{")
+  .replace(/}/g, "\\}")
+  .replace(/:/g, "\\:")
+  .replace(/!/g, "\\!")
+  .replace(/,/g, "\\,")
+  .replace(/\./g, "\\.")
+  .replace(/"/g, "\\\"")
+  .replace(/'/g, "\\'");
 }
