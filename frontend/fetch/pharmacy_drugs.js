@@ -269,7 +269,7 @@ function bindEditForm() {
 
     const id = document.getElementById("medId").value;
     const token = localStorage.getItem("token");
-
+    const gramValue = document.getElementById("gram").value.trim();
     const updated = {
       uz_name: document.getElementById("nameUz").value,
       ru_name: document.getElementById("nameRu").value,
@@ -281,8 +281,7 @@ function bindEditForm() {
       made: document.getElementById("manufacturer").value,
       warehouse: document.getElementById("warehouse").value,
       pharmacyId: +document.getElementById("editPharmacySelect").value,
-      // `gram` ni matn sifatida yuborish
-      gram: (document.getElementById("gram").value.trim()) || "0", // Agar bo'sh bo'lsa, "0" qaytadi
+      gram: gramValue === "" ? null : +gramValue,
     };
 
     fetch(`http://localhost:7777/medicine/${id}/update`, {

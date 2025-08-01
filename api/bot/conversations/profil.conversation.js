@@ -282,26 +282,25 @@ async function keyboard(lang) {
     case "uz":
       return [
         [{ text: "Yangilash", callback_data: "update_profile" }],
-        // [{ text: "⬅️ Orqaga" }],
+        [{ text: "Savat", callback_data: "basket" }],
       ];
     case "ru":
       return [
         [{ text: "Обновить", callback_data: "update_profile" }],
-        // [{ text: "⬅️ Назад" }],
+        [{ text: "корзина", callback_data: "basket" }]
       ];
     case "en":
       return [
         [{ text: "Update", callback_data: "update_profile" }],
-        // [{ text: "⬅️ Back" }],
+        [{ text: "Cart", callback_data: "basket" }],
       ];
     default:
       return [
         [{ text: "Update", callback_data: "update_profile" }],
-        // [{ text: "⬅️ Back" }],
+        [{ text: "⬅️ Back" }],
       ];
   }
 }
-
 
 function escapeMarkdownV2(text) {
   return text

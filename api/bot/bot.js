@@ -15,7 +15,7 @@ bot.setMyCommands([
 ]);
 
 startConversation(bot);
-// searchConversation(bot);
+searchConversation(bot);
 registerProfileConversation(bot);
 registerLanguageConversation(bot);
 registerContactConversation(bot);

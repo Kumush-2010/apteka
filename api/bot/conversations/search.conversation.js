@@ -108,6 +108,7 @@ export function searchConversation(bot) {
 
             let message = `<b>${texts.found_medicines[lang]}</b>\n\n`;
             results.forEach((med, index) => {
+                console.log("gram:", med.gram)
                 message += `${index + 1}. ${med[nameField]} — ${med.gram}g\n`;
             });
 

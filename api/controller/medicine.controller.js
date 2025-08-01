@@ -159,7 +159,7 @@ const updateMedicine = async (req, res) => {
             one_box: value.one_box || medicine.one_box,
             one_plate_price: value.one_plate_price || medicine.one_plate_price,
             one_box_price: value.one_box_price || medicine.one_box_price,
-            gram: value.gram || medicine.gram,
+            gram: value.gram != null ? value.gram : medicine.gram,
             pharmacyId: value.pharmacyId || medicine.pharmacyId
         };
 
