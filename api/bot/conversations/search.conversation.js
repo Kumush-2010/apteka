@@ -1,4 +1,4 @@
-import { BUCKET_NAME, SUPABASE_URL } from "../../config/config.js";
+       import { BUCKET_NAME, SUPABASE_URL } from "../../config/config.js";
 import prisma from "../../prisma/setup.js";
 
 const searchStates = new Map();
@@ -14,11 +14,6 @@ const texts = {
         uz: '"{query}" nomli dori topilmadi.',
         ru: 'Лекарство с названием "{query}" не найдено.',
         en: 'No medicine found with the name "{query}".'
-    },
-    choose_from_list: {
-        uz: "Quyidagilardan birini tanlang:",
-        ru: "Выберите из списка:",
-        en: "Choose from the list:"
     },
     found_medicines: {
         uz: "Topilgan dorilar:",
@@ -52,7 +47,7 @@ const texts = {
     }
 };
 
-// 🧠 Foydalanuvchi tilini olish uchun yordamchi funksiya
+// --- Yordamchi funksiyalar ---
 async function getUserLang(chatId) {
     const user = await prisma.user.findUnique({
         where: { telegramId: BigInt(chatId) }
@@ -60,16 +55,54 @@ async function getUserLang(chatId) {
     return user?.language || 'uz';
 }
 
+async function getOrCreateUser(telegramId) {
+    return await prisma.user.upsert({
+        where: { telegramId: BigInt(telegramId) },
+        update: {},
+        create: { telegramId: BigInt(telegramId) }
+    });
+}
+
+function getMedicineNameByLang(med, lang) {
+    const field = { uz: 'uz_name', ru: 'ru_name', en: 'en_name' }[lang] || 'uz_name';
+    return med[field] || med.en_name || med.ru_name || med.uz_name || 'Noma\'lum dori';
+}
+
+async function addMedicineToCart(telegramId, medicine, lang = 'uz') {
+    const user = await getOrCreateUser(telegramId);
+    const itemName = getMedicineNameByLang(medicine, lang);
+    return await prisma.cartItem.upsert({
+        where: {
+            userId_name: { userId: user.id, name: itemName }
+        },
+        update: {
+            quantity: { increment: 1 }
+        },
+        create: {
+            userId: user.id,
+            name: itemName,
+            quantity: 1
+        }
+    });
+}
+
+async function getCartItems(telegramId) {
+    const user = await prisma.user.findUnique({
+        where: { telegramId: BigInt(telegramId) },
+        include: { cartItems: true }
+    });
+    return user?.cartItems || [];
+}
+
+// --- Asosiy qidiruv va savat logikasi ---
 export function searchConversation(bot) {
     bot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text?.trim();
-
         const commandRegex = /^\/?(Dori qidirish|Search drug|Поиск лекарства)$/i;
 
         if (commandRegex.test(text)) {
             searchStates.set(chatId, 'awaiting_query');
-
             const lang = await getUserLang(chatId);
             return bot.sendMessage(chatId, texts.search_prompt[lang]);
         }
@@ -79,12 +112,7 @@ export function searchConversation(bot) {
 
             const query = text;
             const lang = await getUserLang(chatId);
-
-            const nameField = {
-                uz: 'uz_name',
-                ru: 'ru_name',
-                en: 'en_name'
-            }[lang];
+            const nameField = { uz: 'uz_name', ru: 'ru_name', en: 'en_name' }[lang];
 
             const results = await prisma.medicine.findMany({
                 where: {
@@ -94,9 +122,7 @@ export function searchConversation(bot) {
                     }
                 },
                 take: 5,
-                include: {
-                    pharmacy: true
-                }
+                include: { pharmacy: true }
             });
 
             if (results.length === 0) {
@@ -106,9 +132,9 @@ export function searchConversation(bot) {
 
             searchResultsMap.set(chatId, results);
 
+
             let message = `<b>${texts.found_medicines[lang]}</b>\n\n`;
             results.forEach((med, index) => {
-                console.log("gram:", med.gram)
                 message += `${index + 1}. ${med[nameField]} — ${med.gram}g\n`;
             });
 
@@ -119,9 +145,7 @@ export function searchConversation(bot) {
 
             await bot.sendMessage(chatId, message, {
                 parse_mode: 'HTML',
-                reply_markup: {
-                    inline_keyboard: inlineKeyboard
-                }
+                reply_markup: { inline_keyboard: inlineKeyboard }
             });
         }
     });
@@ -129,23 +153,17 @@ export function searchConversation(bot) {
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
         const data = query.data;
-
+        const telegramId = query.from?.id;
         const lang = await getUserLang(chatId);
 
+        // Mahsulot tanlanganda
         if (data.startsWith('select_med_')) {
             const index = parseInt(data.split('select_med_')[1], 10);
             const results = searchResultsMap.get(chatId);
             if (!results || !results[index]) return;
 
             const med = results[index];
-
-            const nameField = {
-                uz: 'uz_name',
-                ru: 'ru_name',
-                en: 'en_name'
-            }[lang];
-
-            const name = med[nameField];
+            const name = getMedicineNameByLang(med, lang);
             const pharmacyName = med.pharmacy.name || texts.unknown_pharmacy[lang];
             const phone = med.pharmacy.phone || texts.unknown_phone[lang];
             const destination = med.pharmacy.destination || texts.unknown_address[lang];
@@ -161,8 +179,8 @@ export function searchConversation(bot) {
 🏭 Ishlab chiqaruvchi: ${med.made}
 📦 Omborda: ${med.warehouse} dona
 
-💊 1 disk: ${med.one_plate_price} so'm (${med.one_plate})
-📦 1 quti: ${med.one_box_price} so'm (${med.one_box})
+💊 1 disk: ${med.one_plate_price} so'm (${med.one_plate} dona)
+📦 1 quti: ${med.one_box_price} so'm (${med.one_box} dona)
 
 🏪 Apteka: ${pharmacyName}
 📍 Manzil: ${address}
@@ -172,12 +190,9 @@ export function searchConversation(bot) {
             `.trim();
 
             const inlineKeyboard = {
-                inline_keyboard: [
-                    [{
-                        text: texts.add_to_cart[lang],
-                        callback_data: `add_to_cart_${med.id}`
-                    }]
-                ]
+                inline_keyboard: [[
+                    { text: texts.add_to_cart[lang], callback_data: `add_to_cart_${med.id}` }
+                ]]
             };
 
             if (imageUrl && imageUrl.startsWith('http')) {
@@ -195,11 +210,45 @@ export function searchConversation(bot) {
             }
         }
 
+        // Savatga qo‘shilganda + savatni ko‘rsatish
         if (data.startsWith('add_to_cart_')) {
-            await bot.answerCallbackQuery(query.id, {
-                text: texts.added_to_cart[lang],
-                show_alert: false
-            });
+            const medId = parseInt(data.split('add_to_cart_')[1], 10);
+            if (!telegramId) return;
+
+            try {
+                const med = await prisma.medicine.findUnique({
+                    where: { id: medId },
+                    include: { pharmacy: true }
+                });
+                if (!med) {
+                    await bot.answerCallbackQuery(query.id, {
+                        text: "Dori topilmadi.",
+                        show_alert: true
+                    });
+                    return;
+                }
+
+                await addMedicineToCart(telegramId, med, lang);
+
+                const cartItems = await getCartItems(telegramId);
+                let cartText = cartItems.length
+                    ? "🛒 Savat:\n" + cartItems.map(it => `${it.name} - ${it.quantity}`).join('\n')
+                    : "Savat bo'sh.";
+
+                await bot.answerCallbackQuery(query.id, {
+                    text: texts.added_to_cart[lang],
+                    show_alert: false
+                });
+
+
+                await bot.sendMessage(chatId, cartText);
+            } catch (err) {
+                console.error("Savatga qo'shishda xato:", err);
+                await bot.answerCallbackQuery(query.id, {
+                    text: "Savatga qo'shishda xato yuz berdi.",
+                    show_alert: true
+                });
+            }
         }
     });
 }

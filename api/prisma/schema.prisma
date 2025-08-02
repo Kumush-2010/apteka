@@ -85,5 +85,16 @@ model User {
   phone     String?        
   language  String?     
   role      Role?
+  cartItems CartItem[]
   createdAt DateTime   @default(now())
+}
+
+model CartItem {
+  id       Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  name    String   
+  quantity Int  @default(1)
+  createdAt DateTime @default(now())
+  @@unique([userId, name])
 }
