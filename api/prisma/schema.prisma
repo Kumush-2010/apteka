@@ -86,6 +86,7 @@ model User {
   language  String?     
   role      Role?
   cartItems CartItem[]
+  orders   Order[]
   createdAt DateTime   @default(now())
 }
 
@@ -98,3 +99,25 @@ model CartItem {
   createdAt DateTime @default(now())
   @@unique([userId, name])
 }
+
+model Order {
+  id    Int    @id @default(autoincrement())
+  userId  Int  
+  createdAt DateTime @default(now())
+  status  String  @default("pending")
+  totalPrice Float
+  user   User    @relation(fields: [userId], references: [id])
+  items OrderItem[]
+  currentLocation String? 
+  deliveryLocation String?
+}
+
+model OrderItem {
+  id  Int @id @default(autoincrement())
+  orderId Int
+  name  String 
+  quantity Int
+  price  Float?
+  order  Order  @relation(fields: [orderId], references: [id])
+}
+

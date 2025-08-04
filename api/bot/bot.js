@@ -6,7 +6,7 @@ import { registerProfileConversation } from './conversations/profil.conversation
 import { registerLanguageConversation } from './conversations/language.conversation.js';
 import { registerContactConversation } from './conversations/contact.conversation.js';
 import { registerInfoConversation } from './conversations/info.conversation.js';
-import { getCartItems } from './conversations/cart.conversation.js';
+import { getCartItems, setupOrderFlow } from './conversations/cart.conversation.js';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
@@ -21,7 +21,8 @@ registerProfileConversation(bot);
 registerLanguageConversation(bot);
 registerContactConversation(bot);
 registerInfoConversation(bot);
-getCartItems(bot);
+setupOrderFlow(bot)
+getCartItems(bot)
 
 bot.on("polling_error", (error) => {
   console.error("Polling xatosi:", error);
