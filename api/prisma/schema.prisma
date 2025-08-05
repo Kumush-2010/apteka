@@ -76,6 +76,7 @@ model Medicine {
   image           String   @db.Text
   pharmacyId      Int
   pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
+  cartItems  CartItem[]
 }
 
 model User {
@@ -96,6 +97,9 @@ model CartItem {
   user      User     @relation(fields: [userId], references: [id])
   name    String   
   quantity Int  @default(1)
+  price   Float?
+  medicineId  Int?
+  medicine  Medicine? @relation(fields: [medicineId], references: [id])
   createdAt DateTime @default(now())
   @@unique([userId, name])
 }

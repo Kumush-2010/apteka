@@ -1,4 +1,4 @@
-  // api/bot/conversations/cart.conversation.js
+
 import prisma from "../../prisma/setup.js";
 
 // --- Matnlar ---
@@ -34,7 +34,7 @@ async function getUserLang(chatId) {
   return user?.language || "uz";
 }
 
-async function getCart(telegramId) {
+async function getCart(telegramId) { 
   const tid = BigInt(telegramId);
   const user = await prisma.user.findUnique({
     where: { telegramId: tid },
@@ -96,7 +96,7 @@ async function sendCart(bot, chatId, telegramId) {
 }
 
 // --- Buyurtma yaratish yordamchisi ---
-async function proceedToPaymentAndCreateOrder(bot, telegramId, chatId, state) {
+ async function proceedToPaymentAndCreateOrder(bot, telegramId, chatId, state) {
   const lang = state?.lang || (await getUserLang(chatId));
   const cartItems = state?.cartItems || [];
   if (cartItems.length === 0) {
@@ -104,10 +104,9 @@ async function proceedToPaymentAndCreateOrder(bot, telegramId, chatId, state) {
     return;
   }
 
-
   const user = await prisma.user.findUnique({
     where: { telegramId: BigInt(telegramId) }
-  });
+  });                                                                                                                                                                                                                                                
   if (!user) {
     await bot.sendMessage(chatId, texts.user_not_found[lang]);
     orderState.delete(telegramId);
@@ -115,17 +114,29 @@ async function proceedToPaymentAndCreateOrder(bot, telegramId, chatId, state) {
   }
 
   try {
+    // Narxlarni hisoblash
+    let totalPrice = 0;
+    for (const item of cartItems) {
+      const price = item.medicine?.price || 0; 
+      totalPrice += price * item.quantity;
+    }    
+
+    // Yetkazish narxi
+    const deliveryFee = 10000;
+    totalPrice += deliveryFee;
+    console.log(totalPrice)
     const order = await prisma.order.create({
       data: {
         user: { connect: { id: user.id } },
         status: "pending",
-        totalPrice: 0,
+        totalPrice,
         currentLocation: state.currentLocation || null,
-        deliveryLocation: state.deliveryLocation || null,
+        deliveryLocation: state.deliveryLocation || null,                                                                                 
         items: {
           create: cartItems.map(it => ({
             name: it.name,
-            quantity: it.quantity
+            quantity: it.quantity,
+            price: it.medicine.price 
           }))
         }
       },
@@ -137,13 +148,15 @@ async function proceedToPaymentAndCreateOrder(bot, telegramId, chatId, state) {
       where: { userId: user.id }
     });
 
-    const lines = order.items.map(i => `${i.name} - ${i.quantity}`).join("\n");
+    const lines = order.items.map(i => `${i.name} - ${i.quantity} x ${i.price} = ${i.quantity * i.price}`).join("\n");
     const summary = `<b>${texts.order_created[lang]}</b>\n` +
       `Buyurtma №${order.id}\n` +
       `Holat: ${order.status}\n` +
       `Hozirgi joy: ${order.currentLocation || "-"}\n` +
-      `Yetkaziladigan joy: ${order.deliveryLocation || "-"}\n` +
-      `Mahsulotlar:\n${lines}`;
+      `Yetkazish manzili: ${order.deliveryLocation || "-"}\n\n` +
+      `Mahsulotlar:\n${lines}\n\n` +
+      `🚚 Yetkazish narxi: ${deliveryFee} so‘m\n` +
+      `💰 Umumiy: ${totalPrice} so‘m`;
 
     await bot.sendMessage(chatId, summary, { parse_mode: "HTML" });
     orderState.delete(telegramId);
