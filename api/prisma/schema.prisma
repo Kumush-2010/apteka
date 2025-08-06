@@ -1,32 +1,19 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-enum Role {
-  admin
-  superAdmin
-  supplier
-  User
 }
 
 model Admin {
   id        Int        @id @default(autoincrement())
   name      String     @db.VarChar(255)
   phone     String     @unique @db.VarChar(20)
-  password  String     @db.Text
+  password  String
   role      Role
   createdAt DateTime   @default(now()) @db.Timestamp(0)
   updatedAt DateTime   @updatedAt @db.Timestamp(0)
@@ -37,7 +24,7 @@ model Supplier {
   id        Int        @id @default(autoincrement())
   name      String     @db.VarChar(255)
   phone     String     @unique @db.VarChar(20)
-  password  String     @db.Text
+  password  String
   role      Role
   createdAt DateTime   @default(now()) @db.Timestamp(0)
   updatedAt DateTime   @updatedAt @db.Timestamp(0)
@@ -46,82 +33,89 @@ model Supplier {
 
 model Pharmacy {
   id          Int        @id @default(autoincrement())
-  name        String     @db.Text
-  address     String     @db.Text
+  name        String
+  address     String
   locationUrl String
   latitude    Float
   longitude   Float
-  destination String     @db.Text
+  destination String
   phone       String     @unique @db.VarChar(20)
   adminId     Int
-  admin       Admin      @relation(fields: [adminId], references: [id])
   supplierId  Int
-  supplier    Supplier   @relation(fields: [supplierId], references: [id])
   medicine    Medicine[]
+  admin       Admin      @relation(fields: [adminId], references: [id])
+  supplier    Supplier   @relation(fields: [supplierId], references: [id])
 }
 
 model Medicine {
-  id              Int      @id @default(autoincrement())
-  uz_name         String   @db.Text
-  ru_name         String   @db.Text
-  en_name         String   @db.Text
-  made            String   @db.Text
-  one_plate       String   @db.Text
-  one_box         String   @db.Text
-  one_plate_price Int      @db.Integer
-  one_box_price   Int      @db.Integer
-  gram           String   @db.Text
-  warehouse       Int      @db.Integer
-  image_path      String  @db.Text
-  image           String   @db.Text
+  id              Int        @id @default(autoincrement())
+  uz_name         String
+  ru_name         String
+  en_name         String
+  made            String
+  one_plate       String
+  one_box         String
+  one_plate_price Int
+  one_box_price   Int
+  warehouse       Int
+  image_path      String
+  image           String
   pharmacyId      Int
-  pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
-  cartItems  CartItem[]
+  gram            String
+  cartItems       CartItem[]
+  pharmacy        Pharmacy   @relation(fields: [pharmacyId], references: [id])
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  telegramId BigInt      @unique
-  name      String? 
-  phone     String?        
-  language  String?     
-  role      Role?
-  cartItems CartItem[]
-  orders   Order[]
-  createdAt DateTime   @default(now())
+  id         BigInt        @id @default(autoincrement())
+  telegramId BigInt     @unique
+  name       String?
+  language   String?
+  role       Role?
+  createdAt  DateTime   @default(now())
+  phone      String?
+  cartItems  CartItem[]
+  orders     Order[]
 }
 
 model CartItem {
-  id       Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  name    String   
-  quantity Int  @default(1)
-  price   Float?
-  medicineId  Int?
-  medicine  Medicine? @relation(fields: [medicineId], references: [id])
-  createdAt DateTime @default(now())
+  id         Int       @id @default(autoincrement())
+  userId     BigInt
+  name       String
+  quantity   Int       @default(1)
+  createdAt  DateTime  @default(now())
+  medicineId Int?
+  price      Float?
+  medicine   Medicine? @relation(fields: [medicineId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
   @@unique([userId, name])
 }
 
 model Order {
-  id    Int    @id @default(autoincrement())
-  userId  Int  
-  createdAt DateTime @default(now())
-  status  String  @default("pending")
-  totalPrice Float
-  user   User    @relation(fields: [userId], references: [id])
-  items OrderItem[]
-  currentLocation String? 
+  id               Int         @id @default(autoincrement())
+  userId           BigInt
+  createdAt        DateTime    @default(now())
+  status           String      @default("pending")
+  totalPrice       Float
+  currentLocation  String?
   deliveryLocation String?
+  user             User        @relation(fields: [userId], references: [id])
+  items            OrderItem[]
 }
 
 model OrderItem {
-  id  Int @id @default(autoincrement())
-  orderId Int
-  name  String 
+  id       Int    @id @default(autoincrement())
+  orderId  Int
+  name     String
   quantity Int
-  price  Float?
-  order  Order  @relation(fields: [orderId], references: [id])
+  price    Float?
+  order    Order  @relation(fields: [orderId], references: [id])
 }
 
+enum Role {
+  admin
+  superAdmin
+  supplier
+  User
+}

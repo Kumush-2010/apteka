@@ -23,8 +23,26 @@ const texts = {
   user_not_found: { uz: "Foydalanuvchi topilmadi.", ru: "Пользователь не найден.", en: "User not found." }
 };
 
+const PAYMENT_METHODS = [
+  { text: "💳 Click", callback_data: "pay_click" },
+  { text: "💳 Payme", callback_data: "pay_payme" },
+  { text: "🏦 UzumBank", callback_data: "pay_uzum" },
+  { text: "💵 Naqt", callback_data: "pay_cash" }
+];
+
 // --- Holat saqlash ---
 const orderState = new Map(); // telegramId -> { step, lang, cartItems, currentLocation, deliveryLocation }
+
+async function askPaymentMethod(bot, chatId, lang) {
+  await bot.sendMessage(chatId, texts.ask_payment[lang], {
+    reply_markup: {
+      inline_keyboard: [
+        [PAYMENT_METHODS[0], PAYMENT_METHODS[1]],
+        [PAYMENT_METHODS[2], PAYMENT_METHODS[3]]
+      ]
+    }
+  });
+}
 
 // --- Yordamchi funksiyalar ---
 async function getUserLang(chatId) {
@@ -115,12 +133,26 @@ async function sendCart(bot, chatId, telegramId) {
 
   try {
     // Narxlarni hisoblash
-    let totalPrice = 0;
-    for (const item of cartItems) {
-      const price = item.medicine?.price || 0; 
-      totalPrice += price * item.quantity;
-    }    
+    // let totalPrice = 0;
+    // for (const item of cartItems) {
+    //   const price = item.medicine?.price || 0; 
+    //   totalPrice += price * item.quantity;
+    // }    
+    const cartItems = await prisma.cartItem.findMany({
+      where: { userId: Number(telegramId) },
+      include: { medicine: true }
+    })
+    const totalPrice = cartItems.reduce((total, item) => {
+      if (item.medicine && item.medicine.one_plate_price) {
+        return total + item.medicine.one_plate_price * item.quantity
+      } else {
+        console.log("Medicine yo'q yoki price yo'q:", item);
+        return total
+      }
+    }, 0)
 
+
+  
     // Yetkazish narxi
     const deliveryFee = 10000;
     totalPrice += deliveryFee;
@@ -262,6 +294,7 @@ export function setupOrderFlow(bot) {
       const currentState = orderState.get(telegramId);
       if (!currentState) return;
       // Bu yerda haqiqiy to‘lov joylashtirish mumkin, hozircha to‘g‘ridan-to‘g‘ri buyurtma
+      console.log("TelegramId:", telegramId);
       await proceedToPaymentAndCreateOrder(bot, telegramId, chatId, currentState);
       await bot.answerCallbackQuery(query.id);
       return;
@@ -334,7 +367,7 @@ export function setupOrderFlow(bot) {
             [{ text: "💳 To‘lov qilish", callback_data: "do_payment" }],
             [{ text: "❌ Bekor qilish", callback_data: "cancel_order" }]
           ]
-        }
+        }      
       });
       return;
     }
@@ -347,19 +380,74 @@ export function setupOrderFlow(bot) {
   });
 
 
-  // Bekor qilish callback
-  bot.on("callback_query", async (query) => {
-    const telegramId = query.from?.id;
-    const chatId = query.message.chat.id;
-    if (!telegramId) return;
-    const data = query.data;
-    const state = orderState.get(telegramId);
-    const lang = state?.lang || (await getUserLang(chatId));
 
-    if (data === "cancel_order") {
+  bot.on("callback_query", async (query) => {
+  const chatId = query.message.chat.id;
+  const telegramId = query.from?.id;
+  const data = query.data;
+  if (!telegramId) return;
+  const state = orderState.get(telegramId);
+  const lang = state?.lang || (await getUserLang(chatId));
+
+
+   if (data === "cancel_order") {
       orderState.delete(telegramId);
       await bot.sendMessage(chatId, { uz: "Buyurtma bekor qilindi.", ru: "Заказ отменен.", en: "Order cancelled." }[lang]);
       await bot.answerCallbackQuery(query.id);
     }
-  });
+
+  if (data.startsWith("do_payment")) {
+    const paymentType = data.split("_")[2];
+
+    if (!state || !state.cartItems || !state.deliveryLocation || !state.currentLocation) {
+      await bot.sendMessage(chatId, texts.error_fetch[lang]);
+      return;
+    }
+
+    if (paymentType === "cash") {
+      const order = await prisma.order.create({
+        data: {
+          user: { connect: { telegramId: BigInt(telegramId) } },
+          status: "pending",
+          totalPrice: state.cartItems.reduce((sum, item) => sum + (item.quantity * (item.medicine?.price || 0)), 0), 
+          paymentType: "cash",
+           currentLocation: state.currentLocation,
+          deliveryLocation: state.deliveryLocation,
+          items: {
+            create: state.cartItems.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.medicine?.price || 0
+            }))
+          }
+        },
+        include: { items: true }
+      });
+
+      await prisma.cartItem.deleteMany({ where: { userId: order.userId } });
+
+      await bot.sendMessage(chatId, texts.order_created[lang]);
+
+      await bot.sendMessage("@your_telegram_channel", `Yangi buyurtma naqtga:
+ID: ${order.id}
+Holat: ${order.status}`);
+
+      orderState.delete(telegramId);
+      await bot.answerCallbackQuery(query.id);
+      return;
+    }
+
+    let redirectUrl = "";
+    if (paymentType === "click") redirectUrl = "https://my.click.uz/pay?order_id=...";
+    if (paymentType === "payme") redirectUrl = "https://checkout.paycom.uz/...";
+    if (paymentType === "uzum") redirectUrl = "https://pay.uzumbank.uz/pay/...";
+
+    await bot.sendMessage(chatId, `To‘lov sahifasi: <a href=\"${redirectUrl}\">${redirectUrl}</a>`, {
+      parse_mode: "HTML"
+    });
+
+    orderState.set(telegramId, { ...state, awaiting_payment_gateway: paymentType });
+    await bot.answerCallbackQuery(query.id);
+  }
+});
 }
