@@ -306,6 +306,8 @@ export function setupOrderFlow(bot) {
     const telegramId = msg.from?.id;
     const chatId = msg.chat.id;
     if (!telegramId) return;
+
+      
     const state = orderState.get(telegramId);
     if (!state) return;
     const lang = state.lang || (await getUserLang(chatId));
@@ -314,7 +316,7 @@ export function setupOrderFlow(bot) {
       state.currentLocation = `${msg.location.latitude},${msg.location.longitude}`;
       // Endi agar yetkaziladigan manzil hali yo‘q bo‘lsa so‘raymiz
       if (!state.deliveryLocation) {
-        state.step = "waiting_delivery_location";
+        state.step = "waiting_delivery_location"; 
         orderState.set(telegramId, state);
         await bot.sendMessage(chatId, texts.ask_delivery_location[lang], { reply_markup: { remove_keyboard: true } });
         return;
