@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { BOT_TOKEN } from '../config/config.js';
+import { TELEGRAM_BOT_TOKEN } from '../config/config.js';
 import { startConversation } from './conversations/start.conversation.js';
 import { searchConversation } from './conversations/search.conversation.js';
 import { registerProfileConversation } from './conversations/profil.conversation.js';
@@ -8,7 +8,7 @@ import { registerContactConversation } from './conversations/contact.conversatio
 import { registerInfoConversation } from './conversations/info.conversation.js';
 import { getCartItems, setupOrderFlow } from './conversations/cart.conversation.js';
 
-const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
 bot.setMyCommands([
   { command: '/start', description: 'Botni ishga tushurish!' },

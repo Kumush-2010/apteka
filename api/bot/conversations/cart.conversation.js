@@ -302,13 +302,13 @@ export function setupOrderFlow(bot) {
   });
 
   // Location kelganda
-  bot.on("location", async (msg) => {
+  bot.on("location", async (msg) => {            
     const telegramId = msg.from?.id;
     const chatId = msg.chat.id;
     if (!telegramId) return;
-
+                                                                  
       
-    const state = orderState.get(telegramId);
+    const state = orderState.get(telegramId);                                         
     if (!state) return;
     const lang = state.lang || (await getUserLang(chatId));
 
